@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="apklib">
+  <target name="nodeps"/>
+  <target name="all"/>
+  <target name="clean"/>
+  <target name="debug"/>
+  <target name="release"/>
+  <target name="emma"/>
+  <target name="install"/>
+  <target name="uninstall"/>
+  <target name="help"/>
+  <target name="instrument"/>
+</project>

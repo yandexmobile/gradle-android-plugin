@@ -1,0 +1,28 @@
+version = '1.00-SNAPSHOT'
+group = 'ru.yandex.gradle.android'
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+repositories {
+    ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex/ivy-repo').absolutePath}
+    mavenCentral()
+}
+
+dependencies {
+    compile gradleApi()
+    groovy localGroovy()
+}
+
+uploadArchives {
+   repositories {
+       add project.repositories.local
+   }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.2'
+}
+
+// Make sure all code is compiled, tested and checked before uploadArchives.
+uploadArchives.dependsOn ':build'
