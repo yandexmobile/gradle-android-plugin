@@ -1,4 +1,4 @@
-version = '1.00-SNAPSHOT'
+version = '1.00'
 group = 'ru.yandex.gradle.android'
 
 apply plugin: 'groovy'
