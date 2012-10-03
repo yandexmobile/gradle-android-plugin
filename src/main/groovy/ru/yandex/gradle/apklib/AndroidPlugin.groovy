@@ -19,10 +19,7 @@ package ru.yandex.gradle.apklib
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import ru.yandex.gradle.apklib.tasks.AntTask
-import ru.yandex.gradle.apklib.tasks.ApkLibTask
-import ru.yandex.gradle.apklib.tasks.PrebuildTask
-import ru.yandex.gradle.apklib.tasks.SetupTask
+import ru.yandex.gradle.apklib.tasks.*
 
 /**
  * Created by Vladimir Grachev (vgrachev@)
@@ -40,9 +37,11 @@ public class AndroidPlugin implements Plugin<Project>{
         project.task('prebuild', type: PrebuildTask)
         project.task('setup', type: SetupTask)
         project.task('apklib', type: ApkLibTask)
+        project.task('preprocess', type: PreprocessTask)
         project.task('antrun', type: AntTask)
 
         project.prebuild.dependsOn(project.setup)
+        project.preprocess.dependsOn(project.prebuild)
         project.clean.dependsOn(project.setup)
         project.build.dependsOn(project.prebuild)
         project.jar.dependsOn(project.prebuild)
@@ -101,6 +100,22 @@ public class AndroidPlugin implements Plugin<Project>{
         ].each {
             antTask ->
             project.tasks["$antTask"].onlyIf{ project.properties['android.library'] != 'true' }
+        }
+
+        [
+            "android-install",
+            "android-test",
+            "debug",
+            "release",
+            "instrument",
+            "installd",
+            "installr",
+            "installi",
+            "installt",
+            "uninstall"
+        ].each {
+            antTask ->
+            project.tasks["$antTask"].dependsOn 'preprocess'
         }
 
         [
