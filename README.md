@@ -13,21 +13,24 @@ https://github.com/yandexmobile/gradle-android-plugin-usage-example
 Чтобы использовать плагин нужно:
 --------------------------------
 
-1. Импортировать его в build.gradle
+Импортировать его в build.gradle
 
-    buildscript {
-        repositories {
-            ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex/ivy-repo').absolutePath}
-            mavenCentral()
-        }
-        dependencies {
-            classpath "ru.yandex.gradle.android:gradle-android-plugin:1.00"
-        }
+~~~~groovy
+buildscript {
+    repositories {
+        ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex/ivy-repo').absolutePath}
+        mavenCentral()
     }
+    dependencies {
+        classpath "ru.yandex.gradle.android:gradle-android-plugin:1.00"
+    }
+}
 
-    apply plugin: 'apklib'
+apply plugin: 'apklib'
+~~~~
 
-2. При вызове сборки заменить исполняемый файл с ant на gradlew, например
+При вызове сборки заменить исполняемый файл с ant на gradlew, например
 
 Было: ant clean release
+
 Стало: ./gradlew clean release
