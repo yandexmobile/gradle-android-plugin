@@ -39,8 +39,10 @@ public class AndroidPlugin implements Plugin<Project>{
         project.task('apklib', type: ApkLibTask)
         project.task('preprocess', type: PreprocessTask)
         project.task('antrun', type: AntTask)
+        project.task('export', type: ExportTask)
 
         project.prebuild.dependsOn(project.setup)
+        project.export.dependsOn(project.setup)
         project.preprocess.dependsOn(project.prebuild)
         project.clean.dependsOn(project.setup)
         project.build.dependsOn(project.prebuild)
