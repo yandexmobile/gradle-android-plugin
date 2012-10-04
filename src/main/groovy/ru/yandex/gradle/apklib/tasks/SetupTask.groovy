@@ -35,6 +35,7 @@ class SetupTask extends DefaultTask {
         setupVersion()
         setupLibrary()
 
+        loadAntProperties()
         setAntProps()
     }
 
@@ -61,6 +62,13 @@ class SetupTask extends DefaultTask {
     }
 
     def setAntProps() {
+
+        project.properties.each { property ->
+            if (property.key.startsWith("ant.")) {
+                project.ant.properties[property.key.replace("ant.", "")] = property.value
+            }
+        }
+
         project.ant.properties['ant.project.name'] = project.name
         project.ant.properties['version.code'] = project['version.code']
         project.ant.properties['version.name'] = project['version.name']
@@ -152,6 +160,50 @@ class SetupTask extends DefaultTask {
             """);
 
             throw new GradleScriptException("ANDROID_NDK_HOME is undefined.")
+        }
+    }
+
+    def loadAntProperties() {
+        loadAntPropertiesFromFile("project.properties")
+        loadAntPropertiesFromFile("ant.properties")
+    }
+
+    def loadAntPropertiesFromFile(String file) {
+        int count = 1
+        int num = 1
+
+        def skipReference = null
+
+        try {
+            def props = new Properties();
+            new File("$project.projectDir/$file").withInputStream { props.load(it) }
+
+            while (props.stringPropertyNames().contains("android.library.reference." + num)) {
+                if ("$ExportTask.EXPORT_PATH/" == props["android.library.reference." + num]) {
+                    skipReference = "android.library.reference." + num
+                }
+                else {
+                    String value = props["android.library.reference." + num]
+                    props.remove("android.library.reference." + num)
+                    props["android.library.reference." + count] = value
+
+                    logger.info("Found apklib in ant.properties: android.library.reference." + count + " = " + props["android.library.reference." + count])
+                    count++
+                }
+                num++
+            }
+
+            if (skipReference != null) {
+                props.remove(skipReference)
+            }
+
+            props.each {
+                logger.info("ADD ANT PROPERTY 'ant.$it.key' from $file file")
+                project.ext["ant.$it.key"] = it.value
+            }
+        }
+        catch (FileNotFoundException e) {
+            logger.warn("File $project.projectDir/$file not found.")
         }
     }
 

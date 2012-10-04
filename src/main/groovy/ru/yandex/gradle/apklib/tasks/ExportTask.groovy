@@ -2,7 +2,6 @@ package ru.yandex.gradle.apklib.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.apache.tools.ant.taskdefs.Property
 
 /**
  * Created by Vladimir Grachev (rook@)
@@ -14,37 +13,33 @@ class ExportTask extends DefaultTask{
     private static final String KEY_TARGET = "target"
     private static final String KEY_VERSION_CODE = "version.code"
     private static final String KEY_VERSION_NAME = "version.name"
+    private static final String KEY_ANDROID_LIBRARY = "android.library"
 
     private static final String DEFAULT_VALUE_TARGET = "android-15"
 
 
     public final static String EXPORT_PATH = ".gradle_export"
 
-    private def properties = new Properties();
-
     @TaskAction
     def export() {
-        properties.addEntry(new Property(KEY_TARGET, DEFAULT_VALUE_TARGET))
-        properties.addEntry(new Property(KEY_VERSION_CODE, project.properties[KEY_VERSION_CODE]))
-        properties.addEntry(new Property(KEY_VERSION_NAME, project.properties[KEY_VERSION_NAME]))
+        def props = new Properties();
 
-        unpackApkLibs(EXPORT_PATH)
+        props[KEY_TARGET] = DEFAULT_VALUE_TARGET
+        props[KEY_VERSION_CODE] = project.properties[KEY_VERSION_CODE]
+        props[KEY_VERSION_NAME] = project.properties[KEY_VERSION_NAME]
+        props[KEY_ANDROID_LIBRARY] = "true"
+
+        unpackApkLibs(EXPORT_PATH, props)
         unpackLibs(EXPORT_PATH + "/libs")
         createManifest(EXPORT_PATH)
-        createProjectProperties(EXPORT_PATH)
+        createProjectProperties(EXPORT_PATH, props)
         createBuildXml(EXPORT_PATH)
+        createSrcDir(EXPORT_PATH)
         registerExportedLibrary(EXPORT_PATH)
     }
 
-    def unpackApkLibs(String exportPath) {
+    def unpackApkLibs(String exportPath, Properties props) {
         int count = 1
-
-//        def props = project.ant.properties;
-
-//        while (props.containsKey("android.library.reference." + count)) {
-//            logger.info("Found apklib in properties: android.library.reference." + count + " = " + props["android.library.reference." + count])
-//            count++
-//        }
 
         def ant = new AntBuilder()
 
@@ -60,8 +55,7 @@ class ExportTask extends DefaultTask{
 
             logger.info("Setting ant.property: android.library.reference.$count = $exportPath/$file.name")
 
-//            project.ant.properties["android.library.reference.$count"] = "$exportPath/$file.name"
-            properties["android.library.reference.$count"] = "$exportPath/$file.name"
+            props["android.library.reference.$count"] = "$file.name"
 
             count++
         }
@@ -79,13 +73,13 @@ class ExportTask extends DefaultTask{
     }
 
     def createManifest(String exportPath) {
-        InputStream stream = getClass().getClassLoader().getResourceAsStream("AndroidManifestExport.xml")
-        new File("$project.buildDir/$exportPath/AndroidManifest.xml").withWriter {it << stream.getText("UTF-8")}
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("AndroidManifest_Export.xml")
+        new File("$project.projectDir/$exportPath/AndroidManifest.xml").withWriter {it << stream.getText("UTF-8")}
     }
 
-    def createProjectProperties(String exportPath) {
+    def createProjectProperties(String exportPath, Properties props) {
         new File("$project.projectDir/$exportPath/project.properties").withWriter { file ->
-            properties.each { property ->
+            props.each { property ->
                 file << property.key
                 file << "="
                 file << property.value
@@ -95,12 +89,42 @@ class ExportTask extends DefaultTask{
     }
 
     def createBuildXml(String exportPath) {
-        InputStream stream = getClass().getClassLoader().getResourceAsStream("empty_build.xml")
-        new File("$project.buildDir/$exportPath/build.xml").withWriter {it << stream.getText("UTF-8")}
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("build.xml")
+        new File("$project.projectDir/$exportPath/build.xml").withWriter {it << stream.getText("UTF-8")}
+
+        stream = getClass().getClassLoader().getResourceAsStream("build.xml")
+        new File("$project.projectDir/build.xml").withWriter {it << stream.getText("UTF-8")}
     }
 
-    def registerExportedLibrary() {
+    def createSrcDir(String exportPath) {
+        new File("$project.projectDir/$exportPath/src").mkdir()
+    }
 
+    def registerExportedLibrary(String exportPath) {
+        try {
+            ant.move(file: "$project.projectDir/ant.properties", toFile: "$project.projectDir/ant.properties.original");
+        }
+        catch (Throwable e) {
+            logger.warn("ant.properties not found")
+        }
+
+        new File("$project.projectDir/ant.properties").withWriter {file ->
+            project.ant.properties.each { property ->
+                    file << property.key
+                    file << "="
+                    file << property.value
+                    file << "\n"
+            }
+
+            def num = 1
+
+            while (project.ant.properties.containsKey("android.library.reference.$num") &&
+                    "$exportPath/" != project.ant.properties["$exportPath/"]) {
+                num++
+            }
+            file << "android.library.reference.$num=$exportPath/\n"
+
+        }
     }
 
 
