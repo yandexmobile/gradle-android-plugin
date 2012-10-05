@@ -78,6 +78,10 @@ class ExportTask extends DefaultTask{
     }
 
     def createProjectProperties(String exportPath, Properties props) {
+
+        project.hideProperties.prefix = ".export"
+        project.hideProperties.hidePropertiesFiles()
+
         new File("$project.projectDir/$exportPath/project.properties").withWriter { file ->
             props.each { property ->
                 file << property.key
@@ -101,13 +105,6 @@ class ExportTask extends DefaultTask{
     }
 
     def registerExportedLibrary(String exportPath) {
-        try {
-            ant.move(file: "$project.projectDir/ant.properties", toFile: "$project.projectDir/ant.properties.original");
-        }
-        catch (Throwable e) {
-            logger.warn("ant.properties not found")
-        }
-
         new File("$project.projectDir/ant.properties").withWriter {file ->
             project.ant.properties.each { property ->
                     file << property.key

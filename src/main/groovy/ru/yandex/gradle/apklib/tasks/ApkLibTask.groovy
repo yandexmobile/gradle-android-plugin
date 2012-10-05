@@ -155,12 +155,16 @@ class ApkLibTask extends DefaultTask {
     def unpackDependencies() {
 
         int i = 1
+        int count = 1
         try {
             def props = new Properties();
             new File("$project.projectDir/ant.properties").withInputStream { props.load(it) }
 
             while (props.stringPropertyNames().contains("android.library.reference." + i)) {
-                logger.info("Found apklib in ant.properties: android.library.reference." + i + " = " + props["android.library.reference." + i])
+                if ("$ExportTask.EXPORT_PATH/" != props["android.library.reference." + i]) {
+                    logger.info("Found apklib in ant.properties: android.library.reference." + count + " = " + props["android.library.reference." + i])
+                    count++
+                }
                 i++
             }
         }
@@ -182,9 +186,9 @@ class ApkLibTask extends DefaultTask {
 
             logger.info("Setting ant.property: android.library.reference.$i = build/deps/$file.name")
 
-            project.ant.properties["android.library.reference.$i"] = "build/deps/$file.name"
+            project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
 
-            i++
+            count++
         }
     }
 
