@@ -22,7 +22,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "ru.yandex.gradle.android:gradle-android-plugin:1.00"
+        classpath "ru.yandex.android.tools:gradle-android-plugin:1.00"
     }
 }
 
