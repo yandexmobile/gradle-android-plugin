@@ -29,8 +29,11 @@ import java.text.SimpleDateFormat
 class PreprocessTask extends DefaultTask {
 
     def filterFile = new File("$project.projectDir" + "/properties/preprocess.txt")
-    def filterPath = "res/**/preprocess.xml"
+    def filterXmlPath = "res/**/preprocess.xml"
     def filterJavaPath = "**/Preprocess.java"
+
+    def filterXmlOutput = "$project.projectDir/bin"
+    def filterJavaOutput = "$project.projectDir/gen"
 
     @TaskAction
     def preprocess(){
@@ -48,10 +51,10 @@ class PreprocessTask extends DefaultTask {
 
         props['version.name'] = project.version
         props['build.date'] = getDateString("dd.MM.yyyy")
-        props['version.app'] = Helper.getStringVersion(project.version)
-        props['version.number'] = Helper.getIntVersion(project.version)
-        props['version.name'] = Helper.getStringVersion(project.version)
-        props['version.code'] = Helper.getIntVersion(project.version)
+        props['version.app'] = project.properties["version.name"]
+        props['version.number'] = project.properties["version.code"]
+        props['version.name'] = project.properties["version.name"]
+        props['version.code'] = project.properties["version.code"]
         props['build.date.year'] = getDateString("yyyy")
         props['build.date.month'] = getDateString("MM")
         props['build.date.dayMonth'] = getDateString("dd")
@@ -79,9 +82,9 @@ class PreprocessTask extends DefaultTask {
         }
 
         try {
-            ant.copy(todir: "$project.projectDir/bin", encoding: "UTF-8") {
+            ant.copy(todir: "$filterXmlOutput", encoding: "UTF-8") {
                 fileset(dir : "$project.projectDir") {
-                    include(name: filterPath)
+                    include(name: filterXmlPath)
                 }
                 filterset(begintoken: '${', endtoken: '}') {
                     props.each {
@@ -95,7 +98,7 @@ class PreprocessTask extends DefaultTask {
         }
 
         try {
-            ant.copy(todir: "$project.projectDir/gen", encoding: "UTF-8") {
+            ant.copy(todir: "$filterJavaOutput", encoding: "UTF-8") {
                 fileset(dir : "$project.projectDir/preprocess") {
                     include(name: filterJavaPath)
                 }

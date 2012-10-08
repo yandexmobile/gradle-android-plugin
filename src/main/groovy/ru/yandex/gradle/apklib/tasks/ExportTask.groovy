@@ -31,6 +31,7 @@ class ExportTask extends DefaultTask{
 
         unpackApkLibs(EXPORT_PATH, props)
         unpackLibs(EXPORT_PATH + "/libs")
+        preprocess(EXPORT_PATH)
         createManifest(EXPORT_PATH)
         createProjectProperties(EXPORT_PATH, props)
         createBuildXml(EXPORT_PATH)
@@ -69,6 +70,34 @@ class ExportTask extends DefaultTask{
                 logger.info("Copying $file.name to $project.projectDir/$exportPath/$file.name")
                 ant.copy(todir: "$project.projectDir/$exportPath", file: "$file.path", overwrite: "true")
             }
+        }
+    }
+
+    def preprocess(String exportPath) {
+        project.preprocess.filterXmlOutput = "$exportPath"
+        project.preprocess.filterJavaPath = "$exportPath/src"
+        project.preprocess.preprocess()
+
+        try {
+            ant.move(todir: ".hidden", encoding: "UTF-8") {
+                fileset(dir : "$project.projectDir") {
+                    include(name: project.preprocess.filterXmlPath)
+                }
+            }
+        }
+        catch (Throwable e) {
+
+        }
+
+        try {
+            ant.move(todir: ".hidden/preprocess", encoding: "UTF-8") {
+                fileset(dir : "$project.projectDir/preprocess") {
+                    include(name: project.preprocess.filterJavaPath)
+                }
+            }
+        }
+        catch (Throwable e) {
+
         }
     }
 
