@@ -55,9 +55,11 @@ class AntTask extends DefaultTask {
             }
         try {
             def build = getBuildScript()
+            project.hideProperties.hidePropertiesFiles()
             project.ant.ant(antfile: build, dir: project.projectDir, target: target, inheritAll: true)
         }
         finally {
+            project.restoreProperties.restorePropertiesFiles()
             deleteJarsFromDir(libsDir)
             removeBuildScript()
         }

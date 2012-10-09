@@ -1,5 +1,5 @@
 version = '1.00'
-group = 'ru.yandex.gradle.android'
+group = 'ru.yandex.android.tools'
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
