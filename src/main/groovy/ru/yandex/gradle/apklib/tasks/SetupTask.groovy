@@ -222,7 +222,12 @@ class SetupTask extends DefaultTask {
     }
 
     def loadFromMap(String map) {
-        if (!project.properties.containsKey(map)) return
+        if (!project.properties.containsKey(map)){
+            project.ext['beta.features'] = 'true'
+            return
+        }
+
+        project.ext['beta.features'] = 'false'
 
         def props = project.properties[map]
 
