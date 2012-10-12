@@ -32,7 +32,55 @@ artifacts {
 
 uploadArchives {
    repositories {
-       add project.repositories.local
+       if (project.properties.containsKey('teamcity')) {
+           mavenDeployer {
+               auth = { authentication(userName: teamcity['maven.username'], password: teamcity['maven.password']) }
+               repository(url: teamcity['maven.repository'], auth)
+               snapshotRepository(url: teamcity['maven.snaphotRepository'], auth)
+
+               pom.project {
+
+                   parent{
+                       groupId 'org.sonatype.oss'
+                       artifactId 'oss-parent'
+                       version '7'
+                   }
+
+                   modelVersion '4.0.0'
+                   name 'Yandex :: Gradle Android plugin'
+                   description 'Plugin gives an opportunity to build application library and android application which has dependence on it.'
+                   url 'https://github.com/yandexmobile/gradle-android-plugin'
+
+                   licenses {
+                       license {
+                           name 'The Apache Software License, Version 2.0'
+                           url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                           distribution 'repo'
+                       }
+                   }
+
+                   scm {
+                       connection 'scm:git://github.com/yandexmobile/gradle-android-plugin.git'
+                       developerConnection 'scm:git:git@github.com:yandexmobile/gradle-android-plugin.git'
+                       url 'https://github.com/yandexmobile/gradle-android-plugin.git'
+                   }
+
+                   developers {
+                       developer {
+                           name 'Vladimir Grachev'
+                           url 'https://github.com/vgrachev'
+                           roles {
+                               role 'Developer'
+                               role 'Contributor'
+                           }
+                       }
+                   }
+               }
+           }
+       }
+       else {
+           add project.repositories.local
+       }
    }
 }
 
