@@ -36,7 +36,7 @@ uploadArchives {
            mavenDeployer {
                auth = { authentication(userName: teamcity['maven.username'], password: teamcity['maven.password']) }
                repository(url: teamcity['maven.repository'], auth)
-               snapshotRepository(url: teamcity['maven.snaphotRepository'], auth)
+               snapshotRepository(url: teamcity['maven.snapshotRepository'], auth)
 
                pom.project {
 
