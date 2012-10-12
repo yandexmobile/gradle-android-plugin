@@ -16,13 +16,14 @@ class HidePropertiesTask extends DefaultTask {
     def hidePropertiesFiles() {
         hideFile("ant.properties")
         hideFile("project.properties")
+        hideFile("local.properties")
         InputStream stream = getClass().getClassLoader().getResourceAsStream("project.properties.stub")
         new File("$project.projectDir/project.properties").withWriter {it << stream.getText("UTF-8")}
     }
 
     def hideFile(String filename) {
         try {
-            ant.move(file: "$project.projectDir/$filename", toFile: "$project.projectDir/$prefix.$filename");
+            ant.move(file: "$project.projectDir/$filename", toFile: "$project.projectDir/$prefix/$filename");
             logger.info("File $filename was hidden by gradle-android-plugin.")
         }
         catch (Throwable e) {
