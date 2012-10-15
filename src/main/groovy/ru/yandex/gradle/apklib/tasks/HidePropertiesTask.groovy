@@ -14,11 +14,19 @@ class HidePropertiesTask extends DefaultTask {
 
     @TaskAction
     def hidePropertiesFiles() {
+        def props = loadTargetFromFile("project.properties")
         hideFile("ant.properties")
         hideFile("project.properties")
         hideFile("local.properties")
         InputStream stream = getClass().getClassLoader().getResourceAsStream("project.properties.stub")
         new File("$project.projectDir/project.properties").withWriter {it << stream.getText("UTF-8")}
+        if (props.containsKey("target")) {
+            new File("$project.projectDir/project.properties").withWriter {
+                it << "target="
+                it << props["target"]
+                it << "\n"
+            }
+        }
     }
 
     def hideFile(String filename) {
@@ -30,4 +38,16 @@ class HidePropertiesTask extends DefaultTask {
             logger.info("File $filename was not found & was not hidden.")
         }
     }
+
+    def loadTargetFromFile(String file) {
+        def props = new Properties();
+        try {
+            new File("$project.projectDir/$file").withInputStream { props.load(it) }
+        }
+        catch (FileNotFoundException e) {
+
+        }
+        return props;
+    }
+
 }
