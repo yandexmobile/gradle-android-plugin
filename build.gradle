@@ -1,11 +1,35 @@
 import org.gradle.api.artifacts.maven.MavenDeployment
 
-version = '1.00-SNAPSHOT'
+version = '1.00'
 group = 'ru.yandex.android.tools'
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'signing'
+
+def isDevBuild
+def isCiBuild
+def isReleaseBuild
+
+//set build variables based on build type (release, continuous integration, development)
+if (hasProperty("teamcity")) {
+    if(teamcity.containsKey("release")) {
+        isReleaseBuild = true
+        logger.info("This is RELEASE build")
+    } else if (teamcity.containsKey("ci")) {
+        isCiBuild = true
+        version += "-SNAPSHOT"
+        logger.info("This is CONTINUOUS INTEGRATION build")
+    }
+    else {
+        isDevBuild = true
+        logger.info("This is DEVELOPMENT build")
+    }
+}
+else {
+    isDevBuild = true
+    logger.info("This is DEVELOPMENT build")
+}
 
 repositories {
     ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex/ivy-repo').absolutePath}
@@ -34,21 +58,33 @@ artifacts {
     archives groovydocJar
 }
 
-signing {
-    if (project.properties.containsKey('teamcity')) {
-        project.setProperty("signing.keyId", teamcity['signing.keyId'])
-        project.setProperty("signing.password", teamcity['signing.password'])
-        project.setProperty("signing.secretKeyRingFile", teamcity['signing.secretKeyRingFile'])
+if (isReleaseBuild) {
+    signing {
+        if (isReleaseBuild && project.properties.containsKey('teamcity')) {
+            project.setProperty("signing.keyId", teamcity['signing.keyId'])
+            project.setProperty("signing.password", teamcity['signing.password'])
+            project.setProperty("signing.secretKeyRingFile", teamcity['signing.secretKeyRingFile'])
 
-        sign configurations.archives
+            sign configurations.archives
+        }
+    }
+}
+else {
+    task signArchives{
+        // do nothing
     }
 }
 
 uploadArchives {
    repositories {
-       if (project.properties.containsKey('teamcity')) {
+       if (isDevBuild) {
+           add project.repositories.local
+       }
+       else {
            mavenDeployer {
-               beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+               if (isReleaseBuild) {
+                   beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+               }
 
                auth = { authentication(userName: teamcity['maven.username'], password: teamcity['maven.password']) }
                repository(url: teamcity['maven.repository'], auth)
@@ -93,9 +129,6 @@ uploadArchives {
                    }
                }
            }
-       }
-       else {
-           add project.repositories.local
        }
    }
 }
