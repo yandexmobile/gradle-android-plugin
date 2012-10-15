@@ -1,6 +1,6 @@
 import org.gradle.api.artifacts.maven.MavenDeployment
 
-version = '1.00'
+version = '1.01'
 group = 'ru.yandex.android.tools'
 
 apply plugin: 'groovy'
@@ -15,20 +15,16 @@ def isReleaseBuild
 if (hasProperty("teamcity")) {
     if(teamcity.containsKey("release")) {
         isReleaseBuild = true
-        logger.info("This is RELEASE build")
     } else if (teamcity.containsKey("ci")) {
         isCiBuild = true
         version += "-SNAPSHOT"
-        logger.info("This is CONTINUOUS INTEGRATION build")
     }
     else {
         isDevBuild = true
-        logger.info("This is DEVELOPMENT build")
     }
 }
 else {
     isDevBuild = true
-    logger.info("This is DEVELOPMENT build")
 }
 
 repositories {
