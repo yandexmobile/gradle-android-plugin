@@ -1,8 +1,11 @@
+import org.gradle.api.artifacts.maven.MavenDeployment
+
 version = '1.00-SNAPSHOT'
 group = 'ru.yandex.android.tools'
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
 repositories {
     ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex/ivy-repo').absolutePath}
@@ -26,14 +29,27 @@ task groovydocJar(type: Jar, dependsOn:groovydoc) {
 }
 // add the jars as artifacts
 artifacts {
-	archives sourcesJar
-	archives groovydocJar
+    archives jar
+    archives sourcesJar
+    archives groovydocJar
+}
+
+signing {
+    if (project.properties.containsKey('teamcity')) {
+        project.setProperty("signing.keyId", teamcity['signing.keyId'])
+        project.setProperty("signing.password", teamcity['signing.password'])
+        project.setProperty("signing.secretKeyRingFile", teamcity['signing.secretKeyRingFile'])
+
+        sign configurations.archives
+    }
 }
 
 uploadArchives {
    repositories {
        if (project.properties.containsKey('teamcity')) {
            mavenDeployer {
+               beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
                auth = { authentication(userName: teamcity['maven.username'], password: teamcity['maven.password']) }
                repository(url: teamcity['maven.repository'], auth)
                snapshotRepository(url: teamcity['maven.snapshotRepository'], auth)
