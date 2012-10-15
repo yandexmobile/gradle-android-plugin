@@ -28,20 +28,30 @@ import ru.yandex.gradle.apklib.SdkHelper
  */
 class SetupTask extends DefaultTask {
 
+    def mapName = 'teamcity'
+
     @TaskAction
     def setup() {
         setupSdkDir()
         setupNdkDir()
-        setupVersion()
         setupLibrary()
 
         loadAntProperties()
+        loadFromMap(mapName)
+
+        setupVersion()
+
         setAntProps()
     }
 
     def setupVersion() {
         project.ext['version.code'] = getIntVersion(project.version)
         project.ext['version.name'] = getStringVersion(project.version)
+
+        if (project.properties.containsKey('release.brunch') &&
+            "true" == project.properties['release.brunch']) {
+            releaseVersion()
+        }
     }
 
     def getIntVersion(String version) {
@@ -58,7 +68,7 @@ class SetupTask extends DefaultTask {
     }
 
     def getReleaseVersion(String version, String buildNumber) {
-        return version.replace("-SNAPSHOT", "-$buildNumber");
+        return (version + ".$buildNumber").replace("-SNAPSHOT", "");
     }
 
     def setAntProps() {
@@ -67,6 +77,10 @@ class SetupTask extends DefaultTask {
             if (property.key.startsWith("ant.")) {
                 project.ant.properties[property.key.replace("ant.", "")] = property.value
             }
+        }
+
+        if (project.properties.containsKey('build.number')) {
+            project.ant.properties['build.number'] = project['build.number']
         }
 
         project.ant.properties['ant.project.name'] = project.name
@@ -207,7 +221,23 @@ class SetupTask extends DefaultTask {
         }
     }
 
+    def loadFromMap(String map) {
+        if (!project.properties.containsKey(map)){
+            project.ext['beta.features'] = 'true'
+            return
+        }
+
+        project.ext['beta.features'] = 'false'
+
+        def props = project.properties[map]
+
+        props.each{
+            project.ext[it.key] = it.value
+        }
+    }
+
     def releaseVersion() {
+        project.ext['version.original'] = project.version
         project.version = getReleaseVersion(project.version, project['build.number'])
         logger.info("Project version: $project.version")
     }

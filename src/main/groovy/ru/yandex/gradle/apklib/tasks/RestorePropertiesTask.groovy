@@ -17,11 +17,12 @@ class RestorePropertiesTask extends DefaultTask {
          new File("project.properties").delete()
          restoreFile("project.properties")
          restoreFile("ant.properties")
+         restoreFile("local.properties")
      }
 
      def restoreFile(String filename) {
          try {
-             ant.move(file: "$project.projectDir/$prefix.$filename", toFile: "$project.projectDir/$filename");
+             ant.move(file: "$project.projectDir/$prefix/$filename", toFile: "$project.projectDir/$filename");
              logger.info("Hidden file $filename was restored by gradle-android-plugin.")
          }
          catch (Throwable e) {

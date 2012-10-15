@@ -55,30 +55,19 @@ class PreprocessTask extends DefaultTask {
         props['version.number'] = project.properties["version.code"]
         props['version.name'] = project.properties["version.name"]
         props['version.code'] = project.properties["version.code"]
+        if (project.properties.containsKey('build.number')) {
+            props['build.number'] = project.properties["build.number"]
+        }
         props['build.date.year'] = getDateString("yyyy")
         props['build.date.month'] = getDateString("MM")
         props['build.date.dayMonth'] = getDateString("dd")
 
-        if (project.properties.containsKey('teamcity')) {
-            props['beta.features'] = 'false'
-
-            def teamCity = project.properties['teamcity']
-
-            teamCity.each {
-                if (it.key.startsWith("preprocess.")) {
-                    logger.info("Setting preprocess property: $it.key = $it.value")
-                    def key = it.key.replace("preprocess.", "")
-                    props[key] = it.value
-                }
+        project.properties.each {
+            if (it.key.startsWith("preprocess.")) {
+                logger.info("Setting preprocess property: $it.key = $it.value")
+                def key = it.key.replace("preprocess.", "")
+                props[key] = it.value
             }
-
-            if (teamCity.containsKey('build.number')) {
-                logger.info("Setting build.number = " + teamCity['build.number'])
-                props['build.number'] = teamCity['build.number']
-            }
-        }
-        else {
-            props['beta.features'] = 'true'
         }
 
         try {

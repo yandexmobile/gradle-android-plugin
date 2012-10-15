@@ -134,7 +134,7 @@ class ExportTask extends DefaultTask{
     }
 
     def registerExportedLibrary(String exportPath) {
-        new File("$project.projectDir/ant.properties").withWriter {file ->
+        new File("$project.projectDir/local.properties").withWriter {file ->
             project.ant.properties.each { property ->
                     file << property.key
                     file << "="
