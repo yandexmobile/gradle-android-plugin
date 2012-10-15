@@ -25,6 +25,9 @@ class ExportTask extends DefaultTask{
         def props = new Properties();
 
         props[KEY_TARGET] = DEFAULT_VALUE_TARGET
+        if (project.hasProperty("ant.$KEY_TARGET")) {
+            props[KEY_TARGET] = project.properties["ant.$KEY_TARGET"]
+        }
         props[KEY_VERSION_CODE] = project.properties[KEY_VERSION_CODE]
         props[KEY_VERSION_NAME] = project.properties[KEY_VERSION_NAME]
         props[KEY_ANDROID_LIBRARY] = "true"
@@ -77,28 +80,6 @@ class ExportTask extends DefaultTask{
         project.preprocess.filterXmlOutput = "$exportPath"
         project.preprocess.filterJavaPath = "$exportPath/src"
         project.preprocess.preprocess()
-
-        try {
-            ant.move(todir: ".hidden", encoding: "UTF-8") {
-                fileset(dir : "$project.projectDir") {
-                    include(name: project.preprocess.filterXmlPath)
-                }
-            }
-        }
-        catch (Throwable e) {
-
-        }
-
-        try {
-            ant.move(todir: ".hidden/preprocess", encoding: "UTF-8") {
-                fileset(dir : "$project.projectDir/preprocess") {
-                    include(name: project.preprocess.filterJavaPath)
-                }
-            }
-        }
-        catch (Throwable e) {
-
-        }
     }
 
     def createManifest(String exportPath) {
@@ -108,8 +89,13 @@ class ExportTask extends DefaultTask{
 
     def createProjectProperties(String exportPath, Properties props) {
 
-        project.hideProperties.prefix = ".export"
-        project.hideProperties.hidePropertiesFiles()
+        if (new File("$project.projectDir/.export").exists()) {
+            logger.warn("Already exported. Do not hide files.")
+        }
+        else {
+            project.hideProperties.prefix = ".export"
+            project.hideProperties.hidePropertiesFiles()
+        }
 
         new File("$project.projectDir/$exportPath/project.properties").withWriter { file ->
             props.each { property ->

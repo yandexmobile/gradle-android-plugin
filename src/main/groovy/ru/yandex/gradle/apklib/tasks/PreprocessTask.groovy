@@ -87,8 +87,24 @@ class PreprocessTask extends DefaultTask {
         }
 
         try {
-            ant.copy(todir: "$filterJavaOutput", encoding: "UTF-8") {
+            ant.copy(todir: "$filterXmlOutput", encoding: "UTF-8") {
                 fileset(dir : "$project.projectDir/preprocess") {
+                    include(name: filterXmlPath)
+                }
+                filterset(begintoken: '${', endtoken: '}') {
+                    props.each {
+                        filter(token: it.key, value: it.value)
+                    }
+                }
+            }
+        }
+        catch (Throwable e) {
+
+        }
+
+        try {
+            ant.copy(todir: "$filterJavaOutput", encoding: "UTF-8") {
+                fileset(dir : "$project.projectDir/preprocess/src") {
                     include(name: filterJavaPath)
                 }
                 filterset(begintoken: '${', endtoken: '}') {
