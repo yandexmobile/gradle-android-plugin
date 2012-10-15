@@ -61,9 +61,9 @@ artifacts {
 if (isReleaseBuild) {
     signing {
         if (isReleaseBuild && project.properties.containsKey('teamcity')) {
-            project.setProperty("signing.keyId", teamcity['signing.keyId'])
-            project.setProperty("signing.password", teamcity['signing.password'])
-            project.setProperty("signing.secretKeyRingFile", teamcity['signing.secretKeyRingFile'])
+            project.ext["signing.keyId"] = teamcity['signing.keyId']
+            project.ext["signing.password"] = teamcity['signing.password']
+            project.ext["signing.secretKeyRingFile"] = teamcity['signing.secretKeyRingFile']
 
             sign configurations.archives
         }
@@ -86,9 +86,9 @@ uploadArchives {
                    beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
                }
 
-               auth = { authentication(userName: teamcity['maven.username'], password: teamcity['maven.password']) }
-               repository(url: teamcity['maven.repository'], auth)
-               snapshotRepository(url: teamcity['maven.snapshotRepository'], auth)
+               project.ext['auth'] = { authentication(userName: teamcity['maven.username'], password: teamcity['maven.password']) }
+               repository(url: teamcity['maven.repository'], project.ext['auth'])
+               snapshotRepository(url: teamcity['maven.snapshotRepository'], project.ext['auth'])
 
                pom.project {
 
