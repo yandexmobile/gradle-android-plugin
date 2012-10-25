@@ -33,7 +33,7 @@ class ApkLibTask extends DefaultTask {
 
     String extension = "apklib"
 
-    final static String KEY_ANDROID_LIBRARY = "android.library"
+    final static String KEY_ANDROID_LIBRARY = "ant.android.library"
 
     def defineVariables() {
         if (baseName == null) baseName = project.archivesBaseName
@@ -184,7 +184,7 @@ class ApkLibTask extends DefaultTask {
                     dest: "$project.buildDir/deps/$file.name",
                     overwrite: "true")
 
-            logger.info("Setting ant.property: android.library.reference.$i = build/deps/$file.name")
+            logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 
             project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
 
@@ -217,6 +217,4 @@ class ApkLibTask extends DefaultTask {
             lib.delete()
         }
     }
-
-
 }

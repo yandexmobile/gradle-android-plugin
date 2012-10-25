@@ -14,7 +14,6 @@ class RestorePropertiesTask extends DefaultTask {
 
      @TaskAction
      def restorePropertiesFiles() {
-         new File("project.properties").delete()
          restoreFile("project.properties")
          restoreFile("ant.properties")
          restoreFile("local.properties")

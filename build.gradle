@@ -1,6 +1,6 @@
 import org.gradle.api.artifacts.maven.MavenDeployment
 
-version = '1.01'
+version = '1.02'
 group = 'ru.yandex.android.tools'
 
 apply plugin: 'groovy'
