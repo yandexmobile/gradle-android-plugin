@@ -92,33 +92,39 @@ class SetupTask extends DefaultTask {
     }
 
     def setupLibrary() {
-        def props = new Properties();
-
         def files = [new File("$project.projectDir/ant.properties"), new File("$project.projectDir/project.properties")]
 
         String result = 'false'
 
-        files.each { file ->
-            try {
-                file.withInputStream { props.load(it) }
+        if (project.properties.containsKey('android.library')) {
+            logger.debug("Setting android.library from gradle properties")
+            result = project.properties['android.library']
+        }
+        else {
+            files.each { file ->
+                try {
+                    def props = new Properties();
 
-                logger.debug("Reading file: $file.name")
+                    file.withInputStream { props.load(it) }
 
-                if (props.stringPropertyNames().contains("android.library")) {
-                    logger.debug("Props contain android.library")
-                    if (props["android.library"] == 'true') {
-                        result = 'true'
+                    logger.debug("Reading file: $file.name")
+
+                    if (props.stringPropertyNames().contains("android.library")) {
+                        logger.debug("Props contain android.library")
+                        if (props["android.library"] == 'true') {
+                            result = 'true'
+                        }
+                    }
+                    else {
+                        logger.debug("Props don't contain android.library")
                     }
                 }
-                else {
-                    logger.debug("Props don't contain android.library")
+                catch (FileNotFoundException) {
+                    logger.warn("No $project.projectDir/$file.name file found.")
                 }
             }
-            catch (FileNotFoundException) {
-                logger.warn("No $project.projectDir/$file.name file found.")
-            }
         }
-        project.ext['android.library'] = result
+        project.ext['ant.android.library'] = result
     }
 
     def setupSdkDir() {

@@ -33,7 +33,7 @@ class ApkLibTask extends DefaultTask {
 
     String extension = "apklib"
 
-    final static String KEY_ANDROID_LIBRARY = "android.library"
+    final static String KEY_ANDROID_LIBRARY = "ant.android.library"
 
     def defineVariables() {
         if (baseName == null) baseName = project.archivesBaseName
@@ -217,6 +217,4 @@ class ApkLibTask extends DefaultTask {
             lib.delete()
         }
     }
-
-
 }
