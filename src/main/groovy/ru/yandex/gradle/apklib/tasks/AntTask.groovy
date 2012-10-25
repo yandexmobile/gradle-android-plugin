@@ -49,7 +49,7 @@ class AntTask extends DefaultTask {
                     def dpi = project.properties['dpi']
                     def code = versions[dpi]
                     if (code == null) code = 0
-                    project.ant.properties['version.code'] = code + Integer.parseInt(Helper.getIntVersion(project.version))
+                    project.ant.properties['version.code'] = code + Integer.parseInt(project.properties['version.code'])
                     logger.lifecycle("Version Code: " + project.ant.properties['version.code'])
                 }
             }
