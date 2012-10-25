@@ -184,7 +184,7 @@ class ApkLibTask extends DefaultTask {
                     dest: "$project.buildDir/deps/$file.name",
                     overwrite: "true")
 
-            logger.info("Setting ant.property: android.library.reference.$i = build/deps/$file.name")
+            logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 
             project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
 
