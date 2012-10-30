@@ -72,22 +72,6 @@ class PreprocessTask extends DefaultTask {
 
         try {
             ant.copy(todir: "$filterXmlOutput", encoding: "UTF-8") {
-                fileset(dir : "$project.projectDir") {
-                    include(name: filterXmlPath)
-                }
-                filterset(begintoken: '${', endtoken: '}') {
-                    props.each {
-                        filter(token: it.key, value: it.value)
-                    }
-                }
-            }
-        }
-        catch (Throwable e) {
-
-        }
-
-        try {
-            ant.copy(todir: "$filterXmlOutput", encoding: "UTF-8") {
                 fileset(dir : "$project.projectDir/preprocess") {
                     include(name: filterXmlPath)
                 }
@@ -99,7 +83,23 @@ class PreprocessTask extends DefaultTask {
             }
         }
         catch (Throwable e) {
+            logger.info("No preprocessing for $project.projectDir/preprocess/$filterXmlPath has been done")
+        }
 
+        try {
+            ant.copy(todir: "$filterXmlOutput", encoding: "UTF-8") {
+                fileset(dir : "$project.projectDir") {
+                    include(name: filterXmlPath)
+                }
+                filterset(begintoken: '${', endtoken: '}') {
+                    props.each {
+                        filter(token: it.key, value: it.value)
+                    }
+                }
+            }
+        }
+        catch (Throwable e) {
+            logger.info("No preprocessing for $project.projectDir/$filterXmlPath has been done")
         }
 
         try {
@@ -115,7 +115,7 @@ class PreprocessTask extends DefaultTask {
             }
         }
         catch (Throwable e) {
-
+            logger.info("No preprocessing for $project.projectDir/preprocess/src/$filterJavaPath has been done")
         }
     }
 
