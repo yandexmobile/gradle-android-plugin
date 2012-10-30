@@ -1,6 +1,6 @@
 import org.gradle.api.artifacts.maven.MavenDeployment
 
-version = '1.02'
+version = '1.03'
 group = 'ru.yandex.android.tools'
 
 apply plugin: 'groovy'
@@ -28,7 +28,7 @@ else {
 }
 
 repositories {
-    ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex/ivy-repo').absolutePath}
+    ivy{name "local"; url 'file://' + new File(System.getProperty('user.home'), '.yandex-mobdev/ivy-repo').absolutePath}
     mavenCentral()
 }
 
