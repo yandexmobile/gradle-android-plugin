@@ -31,7 +31,7 @@ class ApkLibTask extends DefaultTask {
     String version = null
     String classifier = null
 
-    static final String EXTENSION = "apklib"
+    String extension = "apklib"
 
     String mPostfix = null
 
@@ -64,14 +64,14 @@ class ApkLibTask extends DefaultTask {
                     postfix = ""
                 }
             }
-            extension = EXTENSION + mPostfix
+            extension_new = extension + mPostfix
 
             defineVariables()
 
-            logger.info("Creating application library: $project.buildDir/$baseName-$version.$extension")
+            logger.info("Creating application library: $project.buildDir/$baseName-$version.$extension_new")
 
             def ant = new AntBuilder()
-            ant.copy(todir: "$project.buildDir/$extension") {
+            ant.copy(todir: "$project.buildDir/$extension_new") {
                 fileset(dir : "$project.projectDir") {
                     include(name: "assets/**")
                     include(name: "bin/**")
@@ -86,15 +86,15 @@ class ApkLibTask extends DefaultTask {
 
 
             InputStream stream = getClass().getClassLoader().getResourceAsStream("empty_build.xml")
-            new File("$project.buildDir/$extension/build.xml").withWriter {it << stream.getText("UTF-8")}
+            new File("$project.buildDir/$extension_new/build.xml").withWriter {it << stream.getText("UTF-8")}
 
-            ant.zip(destfile: destWithSrcFile(), basedir: "$project.buildDir/$extension")
-            ant.zip(destfile: destNoLibsFile(), basedir: "$project.buildDir/$extension") {
+            ant.zip(destfile: destWithSrcFile(), basedir: "$project.buildDir/$extension_new")
+            ant.zip(destfile: destNoLibsFile(), basedir: "$project.buildDir/$extension_new") {
                 exclude(name: "src/**")
                 exclude(name: "libs/**")
             }
-            ant.zip(destfile: destFile(), basedir: "$project.buildDir/$extension", excludes: "src/**")
-            ant.zip(destfile: destResFile(), basedir: "$project.buildDir/$extension") {
+            ant.zip(destfile: destFile(), basedir: "$project.buildDir/$extension_new", excludes: "src/**")
+            ant.zip(destfile: destResFile(), basedir: "$project.buildDir/$extension_new") {
                 exclude(name: "src/**")
                 exclude(name: "libs/**")
                 exclude(name: "bin/classes.jar")
@@ -102,7 +102,7 @@ class ApkLibTask extends DefaultTask {
 
             if (new File("$project.projectDir/bin/proguard/obfuscated.jar").exists()) {
 
-                ant.copy(todir: "$project.buildDir/obfuscated-$extension") {
+                ant.copy(todir: "$project.buildDir/obfuscated-$extension_new") {
                     fileset(dir : "$project.projectDir") {
                         include(name: "assets/**")
                         include(name: "bin/res/**")
@@ -112,20 +112,20 @@ class ApkLibTask extends DefaultTask {
                     }
                 }
 
-                ant.zip(destfile: "$project.buildDir/obfuscated-$extension/bin/classes.jar") {
+                ant.zip(destfile: "$project.buildDir/obfuscated-$extension_new/bin/classes.jar") {
                     zipfileset(src: "$project.projectDir/bin/proguard/obfuscated.jar") {
                         exclude(name: '**/R.class')
                         exclude(name: '**/R$*.class')
                     }
                 }
 
-                ant.copy(todir: "$project.buildDir/obfuscated-$extension") {
-                    fileset(dir : "$project.buildDir/$extension") {
+                ant.copy(todir: "$project.buildDir/obfuscated-$extension_new") {
+                    fileset(dir : "$project.buildDir/$extension_new") {
                         include(name: "build.xml")
                     }
                 }
 
-                ant.zip(destfile: destObfuscatedFile(), basedir: "$project.buildDir/obfuscated-$extension")
+                ant.zip(destfile: destObfuscatedFile(), basedir: "$project.buildDir/obfuscated-$extension_new")
 
                 project.artifacts{
                     archives file: destObfuscatedFile(), type: 'apklib'
@@ -144,27 +144,27 @@ class ApkLibTask extends DefaultTask {
 
     public File destObfuscatedFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-obfuscated.$EXTENSION")
+        return new File("$project.buildDir/$baseName-$version-obfuscated.$extension")
     }
 
     public File destWithSrcFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-wsrc.$EXTENSION")
+        return new File("$project.buildDir/$baseName-$version-wsrc.$extension")
     }
 
     public File destNoLibsFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-nolibs.$EXTENSION")
+        return new File("$project.buildDir/$baseName-$version-nolibs.$extension")
     }
 
     public File destFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version.$EXTENSION")
+        return new File("$project.buildDir/$baseName-$version.$extension")
     }
 
     public File destResFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-res.$EXTENSION")
+        return new File("$project.buildDir/$baseName-$version-res.$extension")
     }
 
     def unpackDependencies() {
