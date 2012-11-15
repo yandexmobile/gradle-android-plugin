@@ -57,9 +57,12 @@
             -post-build
             -pre-clean
     -->
-    <target name="-pre-build">
-        <exec executable="${ndk.dir}/ndk-build" failonerror="true"/>
-    </target>
+	<target name="-pre-build">
+	   <exec executable="${ndk.dir}/ndk-build" failonerror="true">
+	   	   <arg value="-B"/>
+	       <arg value="-j${android.ndk.cores}"/>
+	  	</exec>
+	</target>
 
     <target name="clean" depends="android_rules.clean">
         <exec executable="${ndk.dir}/ndk-build" failonerror="true">
