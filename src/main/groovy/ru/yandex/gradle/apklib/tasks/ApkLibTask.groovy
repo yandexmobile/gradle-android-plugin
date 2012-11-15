@@ -38,8 +38,11 @@ class ApkLibTask extends DefaultTask {
     final static String KEY_ANDROID_LIBRARY = "ant.android.library"
 
     def defineVariables() {
-        baseName = project.archivesBaseName
-        version = project.version + mPostfix 
+        if (baseName == null) baseName = project.archivesBaseName
+        if (version == null) version = project.version
+        if (!version.contains(mPostfix)){
+            version += mPostfix
+        }
     }
 
     @TaskAction
