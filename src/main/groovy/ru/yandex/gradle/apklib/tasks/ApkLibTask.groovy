@@ -33,8 +33,6 @@ class ApkLibTask extends DefaultTask {
 
     static final String EXTENSION = "apklib"
 
-    String extension = EXTENSION
-
     String mPostfix = null
 
     final static String KEY_ANDROID_LIBRARY = "ant.android.library"
@@ -56,7 +54,6 @@ class ApkLibTask extends DefaultTask {
         def libs = copyCompileDependenciesToDir("$project.projectDir/libs")
 
         def postfixes = getPostfixes("$project.projectDir/libs")
-        def extension_old = extension
 
         postfixes.each { postfix ->
 
@@ -67,7 +64,7 @@ class ApkLibTask extends DefaultTask {
                     postfix = ""
                 }
             }
-            extension = extension_old + mPostfix
+            extension = EXTENSION + mPostfix
 
             defineVariables()
 
