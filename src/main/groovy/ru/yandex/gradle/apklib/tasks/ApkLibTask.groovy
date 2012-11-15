@@ -33,11 +33,16 @@ class ApkLibTask extends DefaultTask {
 
     String extension = "apklib"
 
+    String mPostfix = null
+
     final static String KEY_ANDROID_LIBRARY = "ant.android.library"
 
     def defineVariables() {
         if (baseName == null) baseName = project.archivesBaseName
         if (version == null) version = project.version
+        if (!version.contains(mPostfix)){
+            version += mPostfix
+        }
     }
 
     @TaskAction
@@ -48,82 +53,99 @@ class ApkLibTask extends DefaultTask {
             return
         }
 
-        defineVariables()
-
-        logger.info("Creating application library: $project.buildDir/$baseName-$version.$extension")
 
         def libs = copyCompileDependenciesToDir("$project.projectDir/libs")
 
-        try {
-            def ant = new AntBuilder()
-            ant.copy(todir: "$project.buildDir/$extension") {
-                fileset(dir : "$project.projectDir") {
-                    include(name: "assets/**")
-                    include(name: "bin/**")
-                    include(name: "res/**")
-                    include(name: "src/**")
-                    include(name: "libs/**")
-                    include(name: "project.properties")
-                    include(name: "AndroidManifest.xml")
+        def postfixes = getPostfixes("$project.projectDir/libs")
+
+        try{
+
+            postfixes.each { postfix ->
+
+                mPostfix = ""
+                if (!postfix.equals("")){
+                    mPostfix = "-"+postfix
+                    if (postfix.equals("all")){
+                        postfix = ""
+                    }
+                }
+                extension_new = extension + mPostfix
+
+                defineVariables()
+
+                logger.info("Creating application library: $project.buildDir/$baseName-$version.$extension_new")
+
+                def ant = new AntBuilder()
+                ant.copy(todir: "$project.buildDir/$extension_new") {
+                    fileset(dir : "$project.projectDir") {
+                        include(name: "assets/**")
+                        include(name: "bin/**")
+                        include(name: "res/**")
+                        include(name: "src/**")
+                        include(name: "libs/*.*")
+                        include(name: "libs/"+postfix+"/**")
+                        include(name: "project.properties")
+                        include(name: "AndroidManifest.xml")
+                    }
+                }
+
+
+                InputStream stream = getClass().getClassLoader().getResourceAsStream("empty_build.xml")
+                new File("$project.buildDir/$extension_new/build.xml").withWriter {it << stream.getText("UTF-8")}
+
+                ant.zip(destfile: destWithSrcFile(), basedir: "$project.buildDir/$extension_new")
+                ant.zip(destfile: destNoLibsFile(), basedir: "$project.buildDir/$extension_new") {
+                    exclude(name: "src/**")
+                    exclude(name: "libs/**")
+                }
+                ant.zip(destfile: destFile(), basedir: "$project.buildDir/$extension_new", excludes: "src/**")
+                ant.zip(destfile: destResFile(), basedir: "$project.buildDir/$extension_new") {
+                    exclude(name: "src/**")
+                    exclude(name: "libs/**")
+                    exclude(name: "bin/classes.jar")
+                }
+
+                if (new File("$project.projectDir/bin/proguard/obfuscated.jar").exists()) {
+
+                    ant.copy(todir: "$project.buildDir/obfuscated-$extension_new") {
+                        fileset(dir : "$project.projectDir") {
+                            include(name: "assets/**")
+                            include(name: "bin/res/**")
+                            include(name: "res/**")
+                            include(name: "project.properties")
+                            include(name: "AndroidManifest.xml")
+                        }
+                    }
+
+                    ant.zip(destfile: "$project.buildDir/obfuscated-$extension_new/bin/classes.jar") {
+                        zipfileset(src: "$project.projectDir/bin/proguard/obfuscated.jar") {
+                            exclude(name: '**/R.class')
+                            exclude(name: '**/R$*.class')
+                        }
+                    }
+
+                    ant.copy(todir: "$project.buildDir/obfuscated-$extension_new") {
+                        fileset(dir : "$project.buildDir/$extension_new") {
+                            include(name: "build.xml")
+                        }
+                    }
+
+                    ant.zip(destfile: destObfuscatedFile(), basedir: "$project.buildDir/obfuscated-$extension_new")
+
+                    project.artifacts{
+                        archives file: destObfuscatedFile(), type: 'apklib'
+                    }
+                }
+
+                project.artifacts{
+                    archives file: destFile(), type: 'apklib'
+                    archives file: destWithSrcFile(), type: 'apklib'
+                    archives file: destNoLibsFile(), type: 'apklib'
+                    archives file: destResFile(), type: 'apklib'
                 }
             }
-        }
-        finally {
+        }finally {
             deleteCompileDependenciesToDir(libs, "$project.projectDir/libs")
-        }
-
-        InputStream stream = getClass().getClassLoader().getResourceAsStream("empty_build.xml")
-        new File("$project.buildDir/$extension/build.xml").withWriter {it << stream.getText("UTF-8")}
-
-        ant.zip(destfile: destWithSrcFile(), basedir: "$project.buildDir/$extension")
-        ant.zip(destfile: destNoLibsFile(), basedir: "$project.buildDir/$extension") {
-            exclude(name: "src/**")
-            exclude(name: "libs/**")
-        }
-        ant.zip(destfile: destFile(), basedir: "$project.buildDir/$extension", excludes: "src/**")
-        ant.zip(destfile: destResFile(), basedir: "$project.buildDir/$extension") {
-            exclude(name: "src/**")
-            exclude(name: "libs/**")
-            exclude(name: "bin/classes.jar")
-        }
-
-        if (new File("$project.projectDir/bin/proguard/obfuscated.jar").exists()) {
-            def ant = new AntBuilder()
-            ant.copy(todir: "$project.buildDir/obfuscated-$extension") {
-                fileset(dir : "$project.projectDir") {
-                    include(name: "assets/**")
-                    include(name: "bin/res/**")
-                    include(name: "res/**")
-                    include(name: "project.properties")
-                    include(name: "AndroidManifest.xml")
-                }
-            }
-
-            ant.zip(destfile: "$project.buildDir/obfuscated-$extension/bin/classes.jar") {
-                zipfileset(src: "$project.projectDir/bin/proguard/obfuscated.jar") {
-                    exclude(name: '**/R.class')
-                    exclude(name: '**/R$*.class')
-                }
-            }
-
-            ant.copy(todir: "$project.buildDir/obfuscated-$extension") {
-                fileset(dir : "$project.buildDir/$extension") {
-                    include(name: "build.xml")
-                }
-            }
-
-            ant.zip(destfile: destObfuscatedFile(), basedir: "$project.buildDir/obfuscated-$extension")
-
-            project.artifacts{
-                archives file: destObfuscatedFile(), type: 'apklib'
-            }
-        }
-
-        project.artifacts{
-            archives file: destFile(), type: 'apklib'
-            archives file: destWithSrcFile(), type: 'apklib'
-            archives file: destNoLibsFile(), type: 'apklib'
-            archives file: destResFile(), type: 'apklib'
         }
     }
 
@@ -217,4 +239,18 @@ class ApkLibTask extends DefaultTask {
             lib.delete()
         }
     }
+
+    def getPostfixes(String libsDir) {
+        def postfixes = new ArrayList<String>();
+        postfixes.add("");
+        postfixes.add("all");
+        def file = new File(libsDir);
+        file.list().each { name ->
+            if ((new File(libsDir+File.separator+name)).isDirectory()){
+                postfixes.addAll(name)
+            }
+        }
+        return postfixes
+    }
+    
 }
