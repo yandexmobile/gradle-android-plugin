@@ -34,15 +34,15 @@ class ApkLibTask extends DefaultTask {
     String extension = "apklib"
 
     String mPostfix = null
+    String versionPostfix = null
 
     final static String KEY_ANDROID_LIBRARY = "ant.android.library"
 
     def defineVariables() {
         if (baseName == null) baseName = project.archivesBaseName
         if (version == null) version = project.version
-        if (!version.contains(mPostfix)){
-            version += mPostfix
-        }
+        
+        versionPostfix = version + mPostfix
     }
 
     @TaskAction
@@ -73,7 +73,7 @@ class ApkLibTask extends DefaultTask {
 
                 defineVariables()
 
-                logger.info("Creating application library: $project.buildDir/$baseName-$version.$extension_new")
+                logger.info("Creating application library: $project.buildDir/$baseName-$versionPostfix.$extension_new")
 
                 def ant = new AntBuilder()
                 ant.copy(todir: "$project.buildDir/$extension_new") {
@@ -151,27 +151,27 @@ class ApkLibTask extends DefaultTask {
 
     public File destObfuscatedFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-obfuscated.$extension")
+        return new File("$project.buildDir/$baseName-$versionPostfix-obfuscated.$extension")
     }
 
     public File destWithSrcFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-wsrc.$extension")
+        return new File("$project.buildDir/$baseName-$versionPostfix-wsrc.$extension")
     }
 
     public File destNoLibsFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-nolibs.$extension")
+        return new File("$project.buildDir/$baseName-$versionPostfix-nolibs.$extension")
     }
 
     public File destFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version.$extension")
+        return new File("$project.buildDir/$baseName-$versionPostfix.$extension")
     }
 
     public File destResFile() {
         defineVariables()
-        return new File("$project.buildDir/$baseName-$version-res.$extension")
+        return new File("$project.buildDir/$baseName-$versionPostfix-res.$extension")
     }
 
     def unpackDependencies() {
