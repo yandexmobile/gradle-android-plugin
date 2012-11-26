@@ -35,7 +35,8 @@ class SetupTask extends DefaultTask {
         setupSdkDir()
         setupNdkDir()
         setupLibrary()
-
+        setupProguardProperties()
+        
         loadAntProperties()
         loadFromMap(mapName)
 
@@ -183,6 +184,24 @@ class SetupTask extends DefaultTask {
         }
     }
 
+    def setupProguardProperties(){
+        if (project.properties.containsKey('proguard.config')) {
+            logger.info("Setting up 'proguard.config' from project properties: " + project.properties['proguard.config'])
+            project.ant.properties['proguard.config'] = project.properties['proguard.config']
+        }
+        else if (System.getenv().containsKey("proguard.config")) {
+            logger.info("Setting up 'proguard.config' from environment: " + System.getenv().get("proguard.config"))
+            project.ant.properties['proguard.config'] = System.getenv().get("proguard.config")
+            project.ext['proguard.config'] = System.getenv().get("proguard.config")
+        }
+//        else {
+//            logger.info("Setting up 'proguard.config' default: " + project.properties['sdk.dir']+"/tools/proguard/proguard-android.txt")
+//            project.ant.properties['proguard.config'] = project.properties['sdk.dir']+"/tools/proguard/proguard-android.txt"
+//            project.ext['proguard.config'] = project.properties['sdk.dir']+"/tools/proguard/proguard-android.txt"
+//        }
+//        logger.lifecycle("PROGUARD CONFIG DIR: " + project.properties['proguard.config'])
+    }
+    
     def loadAntProperties() {
         loadAntPropertiesFromFile("project.properties")
         loadAntPropertiesFromFile("ant.properties")
