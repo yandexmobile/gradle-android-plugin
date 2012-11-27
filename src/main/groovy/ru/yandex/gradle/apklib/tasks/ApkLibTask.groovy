@@ -37,6 +37,8 @@ class ApkLibTask extends DefaultTask {
     String versionPostfix = null
 
     final static String KEY_ANDROID_LIBRARY = "ant.android.library"
+    
+    final static String DEFAULT_VALUE_PROGUARD = "proguard-project.txt"
 
     def defineVariables() {
         if (baseName == null) baseName = project.archivesBaseName
@@ -85,11 +87,14 @@ class ApkLibTask extends DefaultTask {
                         include(name: "libs/*.*")
                         include(name: "libs/"+postfix+"/**")
                         include(name: "project.properties")
+                        include(name: "proguard-project.txt")
                         include(name: "AndroidManifest.xml")
                     }
                 }
 
 
+                logger.info("Creating application library  proguard-android.txt: $project.projectDir")
+                
                 InputStream stream = getClass().getClassLoader().getResourceAsStream("empty_build.xml")
                 new File("$project.buildDir/$extension_new/build.xml").withWriter {it << stream.getText("UTF-8")}
 
@@ -114,6 +119,7 @@ class ApkLibTask extends DefaultTask {
                             include(name: "res/**")
                             include(name: "project.properties")
                             include(name: "AndroidManifest.xml")
+                            include(name: "proguard-android.txt")
                         }
                     }
 
@@ -209,6 +215,13 @@ class ApkLibTask extends DefaultTask {
             logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 
             project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
+            
+            logger.info("Setting proguard.config: "+"$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD)
+            if (  new File("$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD).exists()  &&  project.ant.properties.containsKey("proguard.config")){
+                project.ant.properties["proguard.config"] = project.ant.properties["proguard.config"]+":"+"$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD
+                logger.info("ADD new proguard.config"+project.ant.properties["proguard.config"] )
+            }
+            
 
             count++
         }
