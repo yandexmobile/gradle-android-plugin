@@ -18,6 +18,8 @@ package ru.yandex.gradle.apklib.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import ru.yandex.gradle.apklib.SdkHelper
+import org.gradle.api.GradleScriptException
 
 /**
  * Created by Vladimir Grachev (vgrachev@)
@@ -202,6 +204,8 @@ class ApkLibTask extends DefaultTask {
 
         def ant = new AntBuilder()
 
+        SdkHelper sdkHelper = new SdkHelper(project)
+
         project.configurations['apklib'].files.each { file ->
             logger.info("Found apklib dependency: " + file.name + " " + file.path)
 
@@ -211,6 +215,22 @@ class ApkLibTask extends DefaultTask {
             ant.unzip(src: file.path,
                     dest: "$project.buildDir/deps/$file.name",
                     overwrite: "true")
+
+            if (sdkHelper.getToolsRevision() >= 21) {
+                if (!new File("$project.buildDir/deps/$file.name/bin/R.txt").exists()) {
+                        logger.error("""
+    =======================================================================
+        ERROR: Outdated library
+        Library $file.name is outdated.
+        It was built with SDK Tools revision less than 21.
+        Please, rebuild it with SDK Tools rev. 21
+                or downgrade your local SDK Tools.
+    =======================================================================
+            """);
+
+                        throw new GradleScriptException("Library $file.name is outdated.")
+                }
+            }
 
             logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 

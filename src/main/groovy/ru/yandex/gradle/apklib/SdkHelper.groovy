@@ -30,9 +30,11 @@ class SdkHelper {
 
     public static final int TOOLS_REVISION_UNKNOWN = Integer.MAX_VALUE;
     public static final int TOOLS_REVISION_UNDEFINED = 0;
+    public static final String TOOLS_REVISION_STRING_UNDEFINED = "UNDEFINED";
 
     private project
     private int toolsRevision = TOOLS_REVISION_UNDEFINED
+    private String toolsRevisionString = TOOLS_REVISION_STRING_UNDEFINED
 
     SdkHelper(project) {
         this.project = project
@@ -46,6 +48,14 @@ class SdkHelper {
         return toolsRevision
     }
 
+    String getToolsRevisionString() {
+        if (toolsRevisionString == TOOLS_REVISION_STRING_UNDEFINED) {
+            setupToolsRevision()
+        }
+
+        return toolsRevisionString
+    }
+
     void setupToolsRevision() {
         def ant = project.ant
         def toolsDir = new File(ant['sdk.dir'], 'tools')
@@ -54,6 +64,7 @@ class SdkHelper {
         assert sourcePropertiesFile.exists()
         ant.property(file: sourcePropertiesFile)
         String revision = ant[PKG_REVISION_PROPERTY];
+        toolsRevisionString = revision
 
         def result = revision.find(/\d+/)
         if (result == null) {

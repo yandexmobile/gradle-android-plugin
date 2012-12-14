@@ -38,6 +38,7 @@ class AntTask extends DefaultTask {
     def versions = [ldpi:100000, mdpi:200000, hdpi:300000, xhdpi:400000]
 
     def BUILD_FILENAME = "gradle_build.xml"
+    def SDK_BUILD_FILENAME = "gradle_sdk_build.xml"
 
     @TaskAction
     def runAnt() {
@@ -54,14 +55,14 @@ class AntTask extends DefaultTask {
                 }
             }
         try {
-            def build = getBuildScript()
+            def build = getBuildScripts()
             project.hideProperties.hidePropertiesFiles()
             project.ant.ant(antfile: build, dir: project.projectDir, target: target, inheritAll: true)
         }
         finally {
             project.restoreProperties.restorePropertiesFiles()
             deleteJarsFromDir(libsDir)
-            removeBuildScript()
+            removeBuildScripts()
         }
     }
 
@@ -88,7 +89,7 @@ class AntTask extends DefaultTask {
     }
 
     def clean() {
-        def build = getBuildScript()
+        def build = getBuildScripts()
 
         if (new SdkHelper(project).getToolsRevision() < 20) {
             logger.error("""
@@ -104,14 +105,17 @@ class AntTask extends DefaultTask {
             project.ant.ant(antfile: build, dir: project.projectDir, target: "clean", inheritAll: true)
         }
 
-        new File("$project.projectDir/" + BUILD_FILENAME).delete()
+        removeBuildScripts()
     }
 
-    def removeBuildScript() {
+    def removeBuildScripts() {
         new File("$project.projectDir/" + BUILD_FILENAME).delete()
+        new File("$project.projectDir/" + SDK_BUILD_FILENAME).delete()
     }
 
-    def getBuildScript() {
+    def getBuildScripts() {
+
+        getSdkBuildScript();
 
         if (SdkHelper.isNdkBuild(project)) {
             return getBuildScript("build_with_ndk.xml")
@@ -120,11 +124,22 @@ class AntTask extends DefaultTask {
         return getBuildScript("build.xml")
     }
 
+    def getSdkBuildScript() {
+
+        String version = new SdkHelper(project).getToolsRevisionString();
+
+        return getSdkBuildScript("build_sdk-" + version + ".xml")
+    }
+
     def getBuildScript(String build) {
+
+        logger.info("Get build script: " + build)
 
         InputStream stream = getClass().getClassLoader().getResourceAsStream(build)
 
-        new File("$project.projectDir/" + BUILD_FILENAME).withWriter {it << stream.getText("UTF-8")}
+        new File("$project.projectDir/" + BUILD_FILENAME).withWriter {
+            it << stream.getText("UTF-8")
+        }
 
         String buildScript = "$project.projectDir/" + BUILD_FILENAME
 
@@ -133,6 +148,24 @@ class AntTask extends DefaultTask {
         }
 
         project.logger.lifecycle("BUILD.XML: " + buildScript)
+
+        return buildScript
+    }
+
+    def getSdkBuildScript(String build) {
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(build)
+
+        new File("$project.projectDir/" + SDK_BUILD_FILENAME).withWriter {
+            it << stream.getText("UTF-8")
+        }
+
+        String buildScript = "$project.projectDir/" + SDK_BUILD_FILENAME
+
+        if (project.properties.containsKey('sdk.build.xml')) {
+            buildScript = project.properties['sdk.build.xml']
+        }
+
+        project.logger.lifecycle("SDK_BUILD.XML: " + buildScript)
 
         return buildScript
     }

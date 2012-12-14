@@ -53,6 +53,12 @@ class SetupTask extends DefaultTask {
             "true" == project.properties['release.brunch']) {
             releaseVersion()
         }
+        else if (project.properties.containsKey(mapName)) {
+            continiousIntegrationVersion()
+        }
+        else {
+            debugVersion()
+        }
     }
 
     def getIntVersion(String version) {
@@ -70,6 +76,14 @@ class SetupTask extends DefaultTask {
 
     def getReleaseVersion(String version, String buildNumber) {
         return (version + ".$buildNumber").replace("-SNAPSHOT", "");
+    }
+
+    def getСiVersion(String version) {
+        return version.replace("-SNAPSHOT", "") + "-SNAPSHOT";
+    }
+
+    def getDebugVersion(String version) {
+        return version.replace("-SNAPSHOT", "") + "-SNAPSHOT";
     }
 
     def setAntProps() {
@@ -143,6 +157,11 @@ class SetupTask extends DefaultTask {
             project.ant.properties['sdk.dir'] = System.getenv().get("ANDROID_HOME")
             project.ext['sdk.dir'] = System.getenv().get("ANDROID_HOME")
         }
+
+        if (project.properties.containsKey('use21') && project.properties['use21'] == "true") {
+            project.ant.properties['sdk.dir'] += ".21"
+        }
+
         logger.lifecycle("SDK DIR: " + project.properties['sdk.dir'])
 
         if (!project.properties.containsKey('sdk.dir')) {
@@ -264,6 +283,18 @@ class SetupTask extends DefaultTask {
     def releaseVersion() {
         project.ext['version.original'] = project.version
         project.version = getReleaseVersion(project.version, project['build.number'])
+        logger.info("Project version: $project.version")
+    }
+
+    def continiousIntegrationVersion() {
+        project.ext['version.original'] = project.version
+        project.version = getСiVersion(project.version)
+        logger.info("Project version: $project.version")
+    }
+
+    def debugVersion() {
+        project.ext['version.original'] = project.version
+        project.version = getDebugVersion(project.version)
         logger.info("Project version: $project.version")
     }
 }
