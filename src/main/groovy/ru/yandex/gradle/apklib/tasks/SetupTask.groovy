@@ -53,6 +53,12 @@ class SetupTask extends DefaultTask {
             "true" == project.properties['release.brunch']) {
             releaseVersion()
         }
+        else if (project.properties.containsKey(map)) {
+            continiousIntegrationVersion()
+        }
+        else {
+            debugVersion()
+        }
     }
 
     def getIntVersion(String version) {
@@ -70,6 +76,10 @@ class SetupTask extends DefaultTask {
 
     def getReleaseVersion(String version, String buildNumber) {
         return (version + ".$buildNumber").replace("-SNAPSHOT", "");
+    }
+
+    def getСiVersion(String version) {
+        return version.replace("-SNAPSHOT", "") + "-SNAPSHOT";
     }
 
     def setAntProps() {
@@ -265,5 +275,15 @@ class SetupTask extends DefaultTask {
         project.ext['version.original'] = project.version
         project.version = getReleaseVersion(project.version, project['build.number'])
         logger.info("Project version: $project.version")
+    }
+
+    def continiousIntegrationVersion() {
+        project.ext['version.original'] = project.version
+        project.version = getСiVersion(project.version)
+        logger.info("Project version: $project.version")
+    }
+
+    def debugVersion() {
+        project.ext['version.original'] = project.version
     }
 }
