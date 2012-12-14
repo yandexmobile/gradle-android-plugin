@@ -232,23 +232,6 @@ class ApkLibTask extends DefaultTask {
                 }
             }
 
-            if (sdkHelper.getToolsRevision() < 21) {
-                if (new File("$project.buildDir/deps/$file.name/bin/R.txt").exists()) {
-                    logger.error("""
-    =======================================================================
-        ERROR: Unknown library format.
-        Binary format of Library $file.name is unknown.
-        It seems that it was built with SDK Tools revision 21,
-        But you are using SDK Tools rev. $sdkHelper.getToolsRevisionString()
-        Please, rebuild library with SDK Tools rev. $sdkHelper.getToolsRevisionString()
-                or upgrade your local SDK Tools.
-    =======================================================================
-            """);
-
-                    throw new GradleScriptException("Binary format of Library $file.name is unknown.")
-                }
-            }
-
             logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 
             project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
