@@ -157,6 +157,11 @@ class SetupTask extends DefaultTask {
             project.ant.properties['sdk.dir'] = System.getenv().get("ANDROID_HOME")
             project.ext['sdk.dir'] = System.getenv().get("ANDROID_HOME")
         }
+
+        if (project.properties.containsKey('use21') && project.properties['use21'] == "true") {
+            project.ant.properties['sdk.dir'] += ".21"
+        }
+
         logger.lifecycle("SDK DIR: " + project.properties['sdk.dir'])
 
         if (!project.properties.containsKey('sdk.dir')) {
