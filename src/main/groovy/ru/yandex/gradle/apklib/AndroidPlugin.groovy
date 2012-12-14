@@ -136,5 +136,10 @@ public class AndroidPlugin implements Plugin<Project>{
                 }
             }
         }
+
+        project.task("use21") << {
+            project.logger.info("Turning on SDK Tools rev.21 usage.")
+            project.ext['use21'] = 'true'
+        }
     }
 }
