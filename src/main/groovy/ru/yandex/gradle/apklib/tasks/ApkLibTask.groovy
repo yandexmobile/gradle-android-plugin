@@ -236,7 +236,7 @@ class ApkLibTask extends DefaultTask {
 
             logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 
-            project.ext.set("android.library.reference.$count", "build/deps/$file.name")
+            project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
             
             logger.info("Setting proguard.config: "+"$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD)
             if (  new File("$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD).exists()  &&  project.ant.properties.containsKey("proguard.config")){
