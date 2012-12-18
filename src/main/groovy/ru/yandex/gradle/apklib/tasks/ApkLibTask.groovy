@@ -184,23 +184,25 @@ class ApkLibTask extends DefaultTask {
 
     def unpackDependencies() {
 
-        int i = 1
-        int count = 1
-        try {
-            def props = new Properties();
-            new File("$project.projectDir/ant.properties").withInputStream { props.load(it) }
+//        int i = 1
+//        int count = 1
+//        try {
+//            def props = new Properties();
+//            new File("$project.projectDir/ant.properties").withInputStream { props.load(it) }
+//
+//            while (props.stringPropertyNames().contains("android.library.reference." + i)) {
+//                if ("$ExportTask.EXPORT_PATH/" != props["android.library.reference." + i]) {
+//                    logger.info("Found apklib in ant.properties: android.library.reference." + count + " = " + props["android.library.reference." + i])
+//                    count++
+//                }
+//                i++
+//            }
+//        }
+//        catch (FileNotFoundException e) {
+//            logger.warn("No $project.projectDir/ant.properties file found.")
+//        }
 
-            while (props.stringPropertyNames().contains("android.library.reference." + i)) {
-                if ("$ExportTask.EXPORT_PATH/" != props["android.library.reference." + i]) {
-                    logger.info("Found apklib in ant.properties: android.library.reference." + count + " = " + props["android.library.reference." + i])
-                    count++
-                }
-                i++
-            }
-        }
-        catch (FileNotFoundException e) {
-            logger.warn("No $project.projectDir/ant.properties file found.")
-        }
+        int count = project.properties["library.references.count"]
 
         def ant = new AntBuilder()
 
@@ -234,7 +236,7 @@ class ApkLibTask extends DefaultTask {
 
             logger.info("Setting ant.property: android.library.reference.$count = build/deps/$file.name")
 
-            project.ant.properties["android.library.reference.$count"] = "build/deps/$file.name"
+            project.ext.set("android.library.reference.$count", "build/deps/$file.name")
             
             logger.info("Setting proguard.config: "+"$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD)
             if (  new File("$project.buildDir/deps/$file.name/"+ DEFAULT_VALUE_PROGUARD).exists()  &&  project.ant.properties.containsKey("proguard.config")){
@@ -245,6 +247,8 @@ class ApkLibTask extends DefaultTask {
 
             count++
         }
+
+        project.ext.set("library.references.count", count)
     }
 
     def copyCompileDependenciesToDir(String libsDir) {

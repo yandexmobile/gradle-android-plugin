@@ -56,13 +56,52 @@ class AntTask extends DefaultTask {
             }
         try {
             def build = getBuildScripts()
-            project.hideProperties.hidePropertiesFiles()
+//            project.hideProperties.hidePropertiesFiles()
+//            createStubProperties()
             project.ant.ant(antfile: build, dir: project.projectDir, target: target, inheritAll: true)
         }
         finally {
-            project.restoreProperties.restorePropertiesFiles()
+//            removeStubProperties()
+//            project.restoreProperties.restorePropertiesFiles()
             deleteJarsFromDir(libsDir)
             removeBuildScripts()
+        }
+    }
+
+    def removeStubProperties() {
+        new File("$project.projectDir/ant.properties").delete()
+    }
+
+    def createStubProperties() {
+        new File("$project.projectDir/ant.properties").withWriter {file ->
+
+            project.properties.each { property ->
+                if (property.key.startsWith("android.library.reference.")) {
+                    file << "$property.key"
+                    file << "="
+                    file << "$property.value"
+                    file << "\n"
+                }
+            }
+
+            if (project.properties.containsKey("ant.proguard.config")) {
+                file << "proguard.config"
+                file << "="
+                file << project.properties["ant.proguard.config"]
+                file << "\n"
+            }
+        }
+
+        new File("$project.projectDir/ant.properties.2").withWriter {file ->
+
+            project.properties.each { property ->
+                if (property.key.startsWith("android.library.reference.")) {
+                    file << "$property.key"
+                    file << "="
+                    file << "$property.value"
+                    file << "\n"
+                }
+            }
         }
     }
 

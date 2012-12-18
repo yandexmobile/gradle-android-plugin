@@ -89,7 +89,7 @@ class SetupTask extends DefaultTask {
     def setAntProps() {
 
         project.properties.each { property ->
-            if (property.key.startsWith("ant.")) {
+            if (property.key.startsWith("ant.") && !property.key.contains("proguard.config")) {
                 project.ant.properties[property.key.replace("ant.", "")] = property.value
             }
         }
@@ -107,39 +107,39 @@ class SetupTask extends DefaultTask {
     }
 
     def setupLibrary() {
-        def files = [new File("$project.projectDir/ant.properties"), new File("$project.projectDir/project.properties")]
-
-        String result = 'false'
-
-        if (project.properties.containsKey('android.library')) {
-            logger.debug("Setting android.library from gradle properties")
-            result = project.properties['android.library']
-        }
-        else {
-            files.each { file ->
-                try {
-                    def props = new Properties();
-
-                    file.withInputStream { props.load(it) }
-
-                    logger.debug("Reading file: $file.name")
-
-                    if (props.stringPropertyNames().contains("android.library")) {
-                        logger.debug("Props contain android.library")
-                        if (props["android.library"] == 'true') {
-                            result = 'true'
-                        }
-                    }
-                    else {
-                        logger.debug("Props don't contain android.library")
-                    }
-                }
-                catch (FileNotFoundException) {
-                    logger.warn("No $project.projectDir/$file.name file found.")
-                }
-            }
-        }
-        project.ext['ant.android.library'] = result
+//        def files = [new File("$project.projectDir/ant.properties"), new File("$project.projectDir/project.properties")]
+//
+//        String result = 'false'
+//
+//        if (project.properties.containsKey('android.library')) {
+//            logger.debug("Setting android.library from gradle properties")
+//            result = project.properties['android.library']
+//        }
+//        else {
+//            files.each { file ->
+//                try {
+//                    def props = new Properties();
+//
+//                    file.withInputStream { props.load(it) }
+//
+//                    logger.debug("Reading file: $file.name")
+//
+//                    if (props.stringPropertyNames().contains("android.library")) {
+//                        logger.debug("Props contain android.library")
+//                        if (props["android.library"] == 'true') {
+//                            result = 'true'
+//                        }
+//                    }
+//                    else {
+//                        logger.debug("Props don't contain android.library")
+//                    }
+//                }
+//                catch (FileNotFoundException) {
+//                    logger.warn("No $project.projectDir/$file.name file found.")
+//                }
+//            }
+//        }
+//        project.ext['ant.android.library'] = result
     }
 
     def setupSdkDir() {
@@ -222,11 +222,12 @@ class SetupTask extends DefaultTask {
     }
     
     def loadAntProperties() {
-        loadAntPropertiesFromFile("project.properties")
-        loadAntPropertiesFromFile("ant.properties")
+        def count1 = loadAntPropertiesFromFile("project.properties")
+        def count2 = loadAntPropertiesFromFile("ant.properties")
+        project.ext.set("library.references.count", Math.max(count1, count2))
     }
 
-    def loadAntPropertiesFromFile(String file) {
+    int loadAntPropertiesFromFile(String file) {
         int count = 1
         int num = 1
 
@@ -245,7 +246,7 @@ class SetupTask extends DefaultTask {
                     props.remove("android.library.reference." + num)
                     props["android.library.reference." + count] = value
 
-                    logger.info("Found apklib in ant.properties: android.library.reference." + count + " = " + props["android.library.reference." + count])
+                    logger.info("Found apklib in $file: android.library.reference." + count + " = " + props["android.library.reference." + count])
                     count++
                 }
                 num++
@@ -255,10 +256,17 @@ class SetupTask extends DefaultTask {
                 props.remove(skipReference)
             }
 
-            props.each {
-                logger.info("ADD ANT PROPERTY 'ant.$it.key' from $file file")
-                project.ext["ant.$it.key"] = it.value
-            }
+//            props.each {
+//                logger.info("ADD ANT PROPERTY 'ant.$it.key' from $file file")
+//                if ("$it.key".contains("android.library.reference")) {
+//                    project.ext.set("$it.key", it.value)
+//                }
+//                else {
+//                    project.ext.set("ant.$it.key", it.value)
+//                }
+//            }
+
+            return count
         }
         catch (FileNotFoundException e) {
             logger.warn("File $project.projectDir/$file not found.")
