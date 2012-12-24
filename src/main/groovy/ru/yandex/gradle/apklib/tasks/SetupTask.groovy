@@ -107,12 +107,13 @@ class SetupTask extends DefaultTask {
     }
 
     def setupLibrary() {
+        logger.info("SETUP LIBRARY")
         def files = [new File("$project.projectDir/ant.properties"), new File("$project.projectDir/project.properties")]
 
         String result = 'false'
 
         if (project.properties.containsKey('android.library')) {
-            logger.debug("Setting android.library from gradle properties")
+            logger.info("Setting android.library from gradle properties")
             result = project.properties['android.library']
         }
         else {
@@ -122,16 +123,16 @@ class SetupTask extends DefaultTask {
 
                     file.withInputStream { props.load(it) }
 
-                    logger.debug("Reading file: $file.name")
+                    logger.info("Reading file: $file.name")
 
                     if (props.stringPropertyNames().contains("android.library")) {
-                        logger.debug("Props contain android.library")
+                        logger.info("Props contain android.library")
                         if (props["android.library"] == 'true') {
                             result = 'true'
                         }
                     }
                     else {
-                        logger.debug("Props don't contain android.library")
+                        logger.info("Props don't contain android.library")
                     }
                 }
                 catch (FileNotFoundException) {
@@ -139,7 +140,7 @@ class SetupTask extends DefaultTask {
                 }
             }
         }
-//        project.ext['ant.android.library'] = result
+        project.ext['android.library'] = result
     }
 
     def setupSdkDir() {

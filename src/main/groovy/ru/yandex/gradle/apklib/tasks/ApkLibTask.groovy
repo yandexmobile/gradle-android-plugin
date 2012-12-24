@@ -38,7 +38,7 @@ class ApkLibTask extends DefaultTask {
     String mPostfix = null
     String versionPostfix = null
 
-    final static String KEY_ANDROID_LIBRARY = "ant.android.library"
+    final static String KEY_ANDROID_LIBRARY = "android.library"
     
     final static String DEFAULT_VALUE_PROGUARD = "proguard-project.txt"
 
