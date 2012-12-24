@@ -167,7 +167,7 @@ class AntTask extends DefaultTask {
 
         String version = new SdkHelper(project).getToolsRevisionString();
 
-        return getSdkBuildScript("build_sdk-" + version + ".xml")
+        return getSdkBuildScript(version)
     }
 
     def getBuildScript(String build) {
@@ -191,8 +191,17 @@ class AntTask extends DefaultTask {
         return buildScript
     }
 
-    def getSdkBuildScript(String build) {
+    def getSdkBuildScriptForVersion(version) {
+        build = "build_sdk-" + version + ".xml"
         InputStream stream = getClass().getClassLoader().getResourceAsStream(build)
+
+        if (!stream){
+            throw new GradleScriptException("""
+                        Gradle Android Plugin currently doesn't support SDK tools: version ${version}.
+                        To fix it: Copy build.xml from \$ANDROID_SDK_HOME/tools/ant/build.xml to
+                        <gradle_plugin_repo>/src/main/resources/build_sdk-<your_sdk_version>.xml
+                    """)
+        }
 
         new File("$project.projectDir/" + SDK_BUILD_FILENAME).withWriter {
             it << stream.getText("UTF-8")
