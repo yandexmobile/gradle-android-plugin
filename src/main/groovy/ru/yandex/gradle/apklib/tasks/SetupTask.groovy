@@ -107,38 +107,38 @@ class SetupTask extends DefaultTask {
     }
 
     def setupLibrary() {
-//        def files = [new File("$project.projectDir/ant.properties"), new File("$project.projectDir/project.properties")]
-//
-//        String result = 'false'
-//
-//        if (project.properties.containsKey('android.library')) {
-//            logger.debug("Setting android.library from gradle properties")
-//            result = project.properties['android.library']
-//        }
-//        else {
-//            files.each { file ->
-//                try {
-//                    def props = new Properties();
-//
-//                    file.withInputStream { props.load(it) }
-//
-//                    logger.debug("Reading file: $file.name")
-//
-//                    if (props.stringPropertyNames().contains("android.library")) {
-//                        logger.debug("Props contain android.library")
-//                        if (props["android.library"] == 'true') {
-//                            result = 'true'
-//                        }
-//                    }
-//                    else {
-//                        logger.debug("Props don't contain android.library")
-//                    }
-//                }
-//                catch (FileNotFoundException) {
-//                    logger.warn("No $project.projectDir/$file.name file found.")
-//                }
-//            }
-//        }
+        def files = [new File("$project.projectDir/ant.properties"), new File("$project.projectDir/project.properties")]
+
+        String result = 'false'
+
+        if (project.properties.containsKey('android.library')) {
+            logger.debug("Setting android.library from gradle properties")
+            result = project.properties['android.library']
+        }
+        else {
+            files.each { file ->
+                try {
+                    def props = new Properties();
+
+                    file.withInputStream { props.load(it) }
+
+                    logger.debug("Reading file: $file.name")
+
+                    if (props.stringPropertyNames().contains("android.library")) {
+                        logger.debug("Props contain android.library")
+                        if (props["android.library"] == 'true') {
+                            result = 'true'
+                        }
+                    }
+                    else {
+                        logger.debug("Props don't contain android.library")
+                    }
+                }
+                catch (FileNotFoundException) {
+                    logger.warn("No $project.projectDir/$file.name file found.")
+                }
+            }
+        }
 //        project.ext['ant.android.library'] = result
     }
 
