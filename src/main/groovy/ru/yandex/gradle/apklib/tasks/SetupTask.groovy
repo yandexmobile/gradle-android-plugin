@@ -49,8 +49,8 @@ class SetupTask extends DefaultTask {
         project.ext['version.code'] = getIntVersion(project.version)
         project.ext['version.name'] = getStringVersion(project.version)
 
-        if (project.properties.containsKey('release.brunch') &&
-            "true" == project.properties['release.brunch']) {
+        if (project.properties.containsKey('release.branch') &&
+            "true" == project.properties['release.branch']) {
             releaseVersion()
         }
         else if (project.properties.containsKey(mapName)) {
