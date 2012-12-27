@@ -167,7 +167,7 @@ class AntTask extends DefaultTask {
 
         String version = new SdkHelper(project).getToolsRevisionString();
 
-        return getSdkBuildScript(version)
+        return getSdkBuildScriptForVersion(version)
     }
 
     def getBuildScript(String build) {
