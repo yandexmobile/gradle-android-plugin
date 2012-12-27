@@ -75,7 +75,7 @@ class SetupTask extends DefaultTask {
     }
 
     def getReleaseVersion(String version, String buildNumber) {
-        return (version + ".$buildNumber").replace("-SNAPSHOT", "");
+        return version.replace("-SNAPSHOT", "");
     }
 
     def getСiVersion(String version) {
