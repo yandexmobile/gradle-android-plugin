@@ -41,6 +41,8 @@ class ApkLibTask extends DefaultTask {
     final static String KEY_ANDROID_LIBRARY = "android.library"
     
     final static String DEFAULT_VALUE_PROGUARD = "proguard-project.txt"
+    
+    final static String ANDROID_MK = "Android.mk"
 
     def defineVariables() {
         if (baseName == null) baseName = project.archivesBaseName
@@ -52,6 +54,8 @@ class ApkLibTask extends DefaultTask {
     @TaskAction
     def create() {
 
+        logger.info("APKLIB 'apklib' task." + project.properties[KEY_ANDROID_LIBRARY] ) 
+        
         if (project.properties[KEY_ANDROID_LIBRARY] != 'true') {
             logger.info("We are not library. Skipping 'apklib' task.")
             return
@@ -93,7 +97,12 @@ class ApkLibTask extends DefaultTask {
                         include(name: "AndroidManifest.xml")
                     }
                 }
-
+                
+                if (project.properties.containsKey('ndk.build') && "true".equals(project['ndk.build'])) {
+                    logger.info("Copy jni file")
+                    copyJniToDir("$project.buildDir/$extension_new")
+                }
+                    
 
                 logger.info("Creating application library  proguard-android.txt: $project.projectDir")
                 
@@ -289,5 +298,89 @@ class ApkLibTask extends DefaultTask {
         }
         return postfixes
     }
+    
+    
+    def copyJniToDir(String apklibDir){
+        
+        def fileIn = new File ("$project.projectDir/jni/"+ANDROID_MK)
+        logger.info("Copy copyJniToDir " + fileIn.exists() + "$project.projectDir/jni/"+ANDROID_MK)
+        if (fileIn.exists()){
+
+            def ant = new AntBuilder()
+            ant.copy(todir: apklibDir) {
+                fileset(dir : "$project.projectDir") {
+                    include(name: "jni/**")
+                    exclude(name: "jni/"+ANDROID_MK)
+                }
+            }
+            
+            def fileOut  = new File (apklibDir+"/jni/"+ANDROID_MK)
+            
+            def path  = null
+//            def isInclude = false;
+            
+            fileIn.eachLine{ line ->
+                if (line.find(/LOCAL_PATH :=/) != null){
+                    path = line.replaceAll(/LOCAL_PATH := \$\(call my-dir\)/,'').trim()
+                    if (path.startsWith("/..")){
+                        path = path.replaceFirst(/\/../,'')
+                    }
+                    fileOut.leftShift('LOCAL_PATH := $(call my-dir)/\n')
+                }else{
+                    fileOut.leftShift(line+"\n")
+
+//                    if (path != null && (line.find(/ALL_INCLUDES :=/) != null || isInclude)){
+//                        isInclude  = true;
+//                        def pathInclude = line.replaceAll('ALL_INCLUDES :=','')
+//                        pathInclude = pathInclude.replaceAll(/\$\(LOCAL_PATH\)/,'').trim();
+//                        if (pathInclude.size() > 0){
+//                            pathInclude = pathInclude.replaceAll("\\\\","").trim();
+//                            if (line.find(/build\/deps/) != null){
+//                                logger.info("ERROR No copy header files path = $project.projectDir" + (path+pathInclude)+" pathInclude contains  /build/deps pathInclude = "+pathInclude)
+//                            }else if (pathInclude.startsWith("/..")){
+//                                logger.info("ERROR No copy header files path = $project.projectDir" + (path+pathInclude)+" pathInclude start with /.. pathInclude = "+pathInclude)
+//                            }else if (!(new File("$project.projectDir" + (path+pathInclude))).exists() ){
+//                                logger.info("ERROR No copy header files path = $project.projectDir" + (path+pathInclude)+" does not exist" )
+//                            }else{
+//                                logger.info("copy header file path = $project.projectDir" + (path+pathInclude))
+//                                if (pathInclude.size() > 0){
+//                                    ant.copy(todir: apklibDir+"/jni"+pathInclude) {
+//                                        fileset(dir : "$project.projectDir" + (path+pathInclude)) {
+//                                            include(name: "**/*.h")
+//                                            include(name: "**/*.hpp")
+//                                            include(name: "**/*.am")
+//                                        }
+//                                    }
+//                                }else{
+//                                    ant.copy(todir: apklibDir+"/jni") {
+//                                        fileset(dir : path) {
+//                                            include(name: "*.h")
+//                                            include(name: "*.hpp")
+//                                            include(name: "*.am")
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }else{
+//                            isInclude = false;
+//                        }
+//                    }
+                }
+                
+            }
+            logger.info("Copy copyJniToDir " + apklibDir+"/jni/"+ "  path  = "+path)
+            if (path != null  && (new File("$project.projectDir" + path)).exists() ){
+                ant.copy(todir: apklibDir+"/jni/") {
+                    fileset(dir :  "$project.projectDir" + path) {
+                        exclude(name: "**/build/**")
+                        include(name: "**/*.h")
+                        include(name: "**/*.hpp")
+                    }
+                }
+            } else {
+               logger.info("ERROR No copy header files path = $project.projectDir" + path)
+            }
+        }
+    } 
     
 }
