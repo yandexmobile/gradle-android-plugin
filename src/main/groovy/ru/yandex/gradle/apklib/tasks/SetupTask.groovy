@@ -104,6 +104,18 @@ class SetupTask extends DefaultTask {
         if (project.properties.containsKey('dpi') && project.properties['dpi'] != 'all') {
             project.ant.properties['aapt.resource.filter'] = project.properties['dpi']
         }
+
+        if (project.properties['android.library'] != "true") {
+            def manifestName = project.properties['manifest.name']
+
+            if (project.properties.containsKey("manifest.name")) {
+                def manifestFile = "AndroidManifest.${manifestName}.xml"
+                def manifestPath = "$project.projectDir/AndroidManifest.${manifestName}.xml"
+
+                project.ant.properties["manifest.file"] = manifestFile
+                project.ant.properties["manifest.abs.file"] = manifestPath
+            }
+        }
     }
 
     def setupLibrary() {
@@ -112,34 +124,31 @@ class SetupTask extends DefaultTask {
 
         String result = 'false'
 
-        if (project.properties.containsKey('android.library')) {
-            logger.info("Setting android.library from gradle properties")
-            result = project.properties['android.library']
-        }
-        else {
-            files.each { file ->
-                try {
-                    def props = new Properties();
+        logger.info("SETUP LIBRARY Scanning files")
+        files.each { file ->
+            try {
+                def props = new Properties();
 
-                    file.withInputStream { props.load(it) }
+                file.withInputStream { props.load(it) }
 
-                    logger.info("Reading file: $file.name")
+                logger.info("SETUP LIBRARY Reading file: $file.name")
 
-                    if (props.stringPropertyNames().contains("android.library")) {
-                        logger.info("Props contain android.library")
-                        if (props["android.library"] == 'true') {
-                            result = 'true'
-                        }
+                if (props.stringPropertyNames().contains("android.library")) {
+                    logger.info("SETUP LIBRARY Props contain android.library")
+                    if (props["android.library"] == 'true') {
+                        result = 'true'
                     }
-                    else {
-                        logger.info("Props don't contain android.library")
-                    }
-                }
-                catch (FileNotFoundException) {
-                    logger.warn("No $project.projectDir/$file.name file found.")
+                } else {
+                    logger.info("SETUP LIBRARY Props don't contain android.library")
                 }
             }
+            catch (FileNotFoundException) {
+                logger.warn("SETUP LIBRARY No $project.projectDir/$file.name file found.")
+            }
         }
+
+        logger.info("SETUP LIBRARY Result = $result")
+
         project.ext['android.library'] = result
     }
 
