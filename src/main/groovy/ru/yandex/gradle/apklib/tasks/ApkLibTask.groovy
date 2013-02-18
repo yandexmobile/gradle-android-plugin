@@ -127,6 +127,7 @@ class ApkLibTask extends DefaultTask {
                         fileset(dir : "$project.projectDir") {
                             include(name: "assets/**")
                             include(name: "bin/res/**")
+                            include(name: "bin/**.txt")
                             include(name: "res/**")
                             include(name: "project.properties")
                             include(name: "AndroidManifest.xml")
