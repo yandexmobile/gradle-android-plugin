@@ -58,6 +58,7 @@ class AntTask extends DefaultTask {
             def build = getBuildScripts()
 //            project.hideProperties.hidePropertiesFiles()
 //            createStubProperties()
+            project.ant.properties['gradle'] = "true"
             project.ant.ant(antfile: build, dir: project.projectDir, target: target, inheritAll: true)
         }
         finally {
