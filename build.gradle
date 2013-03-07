@@ -39,7 +39,7 @@ artifacts {
     archives groovydocJar
 }
 
-if (hasProperty("teamcity") && teamcity.containsKey("release.branch")) {
+if (hasProperty("teamcity")) {
     signing {
             project.ext["signing.keyId"] = teamcity['signing.keyId']
             project.ext["signing.password"] = teamcity['signing.password']
