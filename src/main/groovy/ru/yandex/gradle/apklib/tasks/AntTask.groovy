@@ -201,8 +201,8 @@ class AntTask extends DefaultTask {
                         Gradle Android Plugin currently doesn't support SDK tools: version ${version}.
                         To fix it: Copy build.xml from \$ANDROID_SDK_HOME/tools/ant/build.xml to
                         <gradle_plugin_repo>/src/main/resources/build_sdk-<your_sdk_version>.xml and
-                        fix -complile target (take a look to build_sdk-21.xml
-                    """)
+                        fix -complile target (take a look to build_sdk-21.xml)
+                    """, new Exception("File not found: " + build))
         }
 
         new File("$project.projectDir/" + SDK_BUILD_FILENAME).withWriter {

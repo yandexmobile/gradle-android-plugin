@@ -705,20 +705,23 @@
         <do-only-if-manifest-hasCode elseText="hasCode = false. Skipping...">
             <!-- merge the project's own classpath and the tested project's classpath -->
 
-            <echo>CUSTOM JAR: ${provided.jar}</echo>
-
+            <!-- Add custom jar as provided dependency
+                Custom jar can be defined from environment (${provided.jar} variable)
+                or in build.gradle script -->
 
             <if>
                 <condition>
                     <isset property="provided.jar" />
                 </condition>
                 <then>
+                    <echo>CUSTOM JAR: ${provided.jar}</echo>
                     <path id="project.target.class.path.2">
                         <pathelement location="${provided.jar}" />
                         <path refid="project.target.class.path" />
                     </path>
                 </then>
                 <else>
+                    <echo>CUSTOM JAR: No custom jar specified</echo>
                     <path id="project.target.class.path.2">
                         <path refid="project.target.class.path" />
                     </path>
