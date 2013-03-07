@@ -8,7 +8,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 //set build variables based on build type (release, continuous integration, development)
-if (!hasProperty("teamcity") || !teamcity.containsKey("release.branch")) {
+if (!project.properties.containsKey('teamcity') || !teamcity.containsKey("release.branch")) {
     version += "-SNAPSHOT"
 }
 
@@ -39,7 +39,7 @@ artifacts {
     archives groovydocJar
 }
 
-if (hasProperty("teamcity")) {
+if (project.properties.containsKey('teamcity')) {
     signing {
             project.ext["signing.keyId"] = teamcity['signing.keyId']
             project.ext["signing.password"] = teamcity['signing.password']
@@ -56,7 +56,7 @@ else {
 
 uploadArchives {
    repositories {
-       if (!hasProperty("teamcity")) {
+       if (!project.properties.containsKey('teamcity')) {
            add project.repositories.local
        }
        else {
