@@ -155,6 +155,11 @@ class ApkLibTask extends DefaultTask {
                     }
                 }
 
+                logger.info("ARTIFACT " + destFile() + " ADDED")
+                logger.info("ARTIFACT " + destWithSrcFile() + " ADDED")
+                logger.info("ARTIFACT " + destNoLibsFile() + " ADDED")
+                logger.info("ARTIFACT " + destResFile() + " ADDED")
+
                 project.artifacts{
                     archives file: destFile(), type: 'apklib'
                     archives file: destWithSrcFile(), type: 'apklib'
@@ -290,7 +295,6 @@ class ApkLibTask extends DefaultTask {
     def getPostfixes(String libsDir) {
         def postfixes = new ArrayList<String>();
         postfixes.add("");
-        postfixes.add("all");
         def file = new File(libsDir);
         file.list().each { name ->
             if ((new File(libsDir+File.separator+name)).isDirectory()){
