@@ -39,7 +39,8 @@ class ApkLibTask extends DefaultTask {
     String versionPostfix = null
 
     final static String KEY_ANDROID_LIBRARY = "android.library"
-    
+    final static String KEY_SKIP_ARTIFACTS = "skip.artifacts"
+
     final static String DEFAULT_VALUE_PROGUARD = "proguard-project.txt"
     
     final static String ANDROID_MK = "Android.mk"
@@ -150,21 +151,25 @@ class ApkLibTask extends DefaultTask {
 
                     ant.zip(destfile: destObfuscatedFile(), basedir: "$project.buildDir/obfuscated-$extension_new")
 
-                    project.artifacts{
-                        archives file: destObfuscatedFile(), type: 'apklib'
+                    if (project.properties[KEY_SKIP_ARTIFACTS] != 'true') {
+                        project.artifacts{
+                            archives file: destObfuscatedFile(), type: 'apklib'
+                        }
                     }
                 }
 
-                logger.info("ARTIFACT " + destFile() + " ADDED")
-                logger.info("ARTIFACT " + destWithSrcFile() + " ADDED")
-                logger.info("ARTIFACT " + destNoLibsFile() + " ADDED")
-                logger.info("ARTIFACT " + destResFile() + " ADDED")
+                if (project.properties[KEY_SKIP_ARTIFACTS] != 'true') {
+                    logger.info("ARTIFACT " + destFile() + " ADDED")
+                    logger.info("ARTIFACT " + destWithSrcFile() + " ADDED")
+                    logger.info("ARTIFACT " + destNoLibsFile() + " ADDED")
+                    logger.info("ARTIFACT " + destResFile() + " ADDED")
 
-                project.artifacts{
-                    archives file: destFile(), type: 'apklib'
-                    archives file: destWithSrcFile(), type: 'apklib'
-                    archives file: destNoLibsFile(), type: 'apklib'
-                    archives file: destResFile(), type: 'apklib'
+                    project.artifacts{
+                        archives file: destFile(), type: 'apklib'
+                        archives file: destWithSrcFile(), type: 'apklib'
+                        archives file: destNoLibsFile(), type: 'apklib'
+                        archives file: destResFile(), type: 'apklib'
+                    }
                 }
             }
         }finally {
@@ -373,8 +378,8 @@ class ApkLibTask extends DefaultTask {
                 }
                 
             }
-            logger.info("Copy copyJniToDir " + apklibDir+"/jni/"+ "  path  = "+path)
             if (path != null  && (new File("$project.projectDir" + path)).exists() ){
+                logger.info("Copy copyJniToDir " + apklibDir+"/jni/"+ "  path  = "+path)
                 ant.copy(todir: apklibDir+"/jni/") {
                     fileset(dir :  "$project.projectDir" + path) {
                         exclude(name: "**/build/**")
@@ -383,7 +388,7 @@ class ApkLibTask extends DefaultTask {
                     }
                 }
             } else {
-               logger.info("ERROR No copy header files path = $project.projectDir" + path)
+               logger.info("ERROR No copy header files path = $project.projectDir/" + path)
             }
         }
     } 
